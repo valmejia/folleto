@@ -117,7 +117,7 @@ function Navbar() {
                 </Menu>
 
                 {/* Cafetería */}
-                <Button sx={buttonStyle} component={Link} to="/menudecafeteria">Cafetería</Button>
+                <Button sx={buttonStyle} component={Link} to="/menuDeCafeteria">Cafetería</Button>
 
                 {/* Barra de búsqueda */}
                 <Search sx={{ marginLeft: "auto", minWidth: 200 }}>
