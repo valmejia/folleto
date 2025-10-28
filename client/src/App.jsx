@@ -13,6 +13,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import { useState, useEffect } from "react";
 import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
+import Compass from "./components/Compass/Compass";
 import * as THREE from "three";
 
 // ================= POPUP =================
@@ -243,16 +244,10 @@ function HomeWithModel() {
                     minPolarAngle={Math.PI / 6}
                     maxPolarAngle={Math.PI / 2.5}
                 />
+
+                <Compass  />
             </Canvas>
 
-            {popupData && (
-                <Popup
-                    onClose={() => setPopupData(null)}
-                    title={popupData.title}
-                    image={popupData.image}
-                    data={popupData.data}
-                />
-            )}
         </div>
     );
 }
