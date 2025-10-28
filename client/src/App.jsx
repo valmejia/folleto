@@ -16,14 +16,14 @@ import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
 import * as THREE from "three";
 
 // ================= POPUP =================
-function Popup({ onClose }) {
+function Popup({ onClose, title, image, data }) {
     return (
         <div
             style={{
                 position: "fixed",
-                top: "100px", // más separación de la navbar
-                left: "40px", // más separación de la izquierda
-                bottom: "40px", // más separación del fondo
+                top: "100px",
+                left: "40px",
+                bottom: "40px",
                 width: "320px",
                 background: "white",
                 borderRadius: "24px",
@@ -48,10 +48,10 @@ function Popup({ onClose }) {
                 ✕
             </button>
 
-            {/* Imagen real del edificio */}
+            {/* Imagen */}
             <img
-                src="/images/edificioA_real.jpg"
-                alt="Edificio A"
+                src={image}
+                alt={title}
                 style={{
                     width: "100%",
                     borderRadius: "16px",
@@ -59,39 +59,45 @@ function Popup({ onClose }) {
                 }}
             />
 
-            {/* Datos importantes */}
-            <h2 style={{ margin: "0 0 10px 0" }}>Edificio A</h2>
-            <p style={{ margin: "0 0 5px 0" }}>
-                📍 Ubicación: Zona Norte del Campus
-            </p>
-            <p style={{ margin: "0 0 5px 0" }}>
-                🏢 Uso: Laboratorios de Ingeniería
-            </p>
-            <p style={{ margin: 0 }}>👩‍🏫 Aulas: 10 | Laboratorios: 4</p>
+            {/* Información */}
+            <h2 style={{ margin: "0 0 10px 0" }}>{title}</h2>
+            {data.map((line, index) => (
+                <p key={index} style={{ margin: "0 0 5px 0" }}>
+                    {line}
+                </p>
+            ))}
         </div>
     );
 }
 
-// ================= MODELO =================
-function CampusModel({ onSelect }) {
-    const { scene } = useGLTF("/models/EDIFICIOA.glb");
+// ================= MODELO DE EDIFICIO =================
+function BuildingModel({ path, color, position, scale, rotation = [0, 0, 0], onSelect }) {
+    const { scene } = useGLTF(path);
     const [hovered, setHovered] = useState(false);
+
+    // Aplicar rotación si scene está cargada
+    useEffect(() => {
+        if (scene) {
+            scene.rotation.set(rotation[0], rotation[1], rotation[2]);
+        }
+    }, [scene, rotation]);
 
     useEffect(() => {
         scene.traverse((child) => {
             if (child.isMesh) {
                 child.material.emissive = hovered
-                    ? new THREE.Color("red")
+                    ? new THREE.Color(color)
                     : new THREE.Color("black");
                 child.material.emissiveIntensity = hovered ? 0.5 : 0;
             }
         });
-    }, [hovered, scene]);
+    }, [hovered, scene, color]);
 
     return (
         <primitive
             object={scene}
-            scale={[1, 1, 1]}
+            scale={scale}
+            position={position}
             onPointerOver={(e) => {
                 e.stopPropagation();
                 setHovered(true);
@@ -108,17 +114,64 @@ function CampusModel({ onSelect }) {
     );
 }
 
+
 // ================= HOME =================
 function HomeWithModel() {
-    const [popupOpen, setPopupOpen] = useState(false);
+    const [popupData, setPopupData] = useState(null);
+
+    const edificios = [
+        {
+            id: "A",
+            path: "/models/EDIFICIOA.glb",
+            color: "red",
+            image: "/images/edificioA_real.jpg",
+            title: "Edificio A",
+            data: [
+                "📍 Ubicación: Zona Norte del Campus",
+                "🏢 Uso: Laboratorios de Ingeniería",
+                "👩‍🏫 Aulas: 10 | Laboratorios: 4",
+            ],
+            position: [-80, 0, 0],
+            scale: [1.5, 1.5, 1.5],
+            rotation: [0,  Math.PI , 0],
+        },
+        {
+            id: "IND",
+            path: "/models/EDIFICIOINDUSTRIAL.glb",
+            color: "orange",
+            image: "/images/edificioIndustrial_real.jpg",
+            title: "Edificio de Ingeniería Industrial",
+            data: [
+                "📍 Ubicación: Zona Este del Campus",
+                "⚙️ Uso: Aulas y talleres de Ingeniería Industrial",
+                "👷‍♀️ Aulas: 8 | Talleres: 3 | Oficinas: 2",
+            ],
+            position: [250, 0, -30],
+            scale: [3, 5, 4],
+            rotation: [0, Math.PI, 0],
+        },
+    ];
 
     return (
         <div style={{ width: "100%", height: "100vh" }}>
-            <Canvas camera={{ position: [20, 15, 40], fov: 50 }}>
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[10, 10, 10]} />
+            <Canvas
+                camera={{ position: [0, 150, 300], fov: 50 }}
+                style={{ background: "#b3e5ff" }}
+            >
+                <ambientLight intensity={0.6} />
+                <directionalLight position={[15, 20, 10]} />
 
-                <CampusModel onSelect={() => setPopupOpen(true)} />
+                {edificios.map((edificio) => (
+                    <BuildingModel
+                        key={edificio.id}
+                        path={edificio.path}
+                        color={edificio.color}
+                        position={edificio.position}
+                        scale={edificio.scale}
+                        rotation={edificio.rotation}
+                        onSelect={() => setPopupData(edificio)}
+                    />
+                ))}
 
                 <OrbitControls
                     minPolarAngle={Math.PI / 4}
@@ -126,11 +179,18 @@ function HomeWithModel() {
                     enablePan={true}
                     enableZoom={true}
                     minDistance={20}
-                    maxDistance={100}
+                    maxDistance={500}
                 />
             </Canvas>
 
-            {popupOpen && <Popup onClose={() => setPopupOpen(false)} />}
+            {popupData && (
+                <Popup
+                    onClose={() => setPopupData(null)}
+                    title={popupData.title}
+                    image={popupData.image}
+                    data={popupData.data}
+                />
+            )}
         </div>
     );
 }
