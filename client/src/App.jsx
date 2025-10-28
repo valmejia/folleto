@@ -9,8 +9,8 @@ import Navbar from "./components/Navbar/Navbar";
 import IsPrivate from "./components/IsPrivate/IsPrivate";
 import IsAnon from "./components/IsAnon/IsAnon";
 
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import { useState, useEffect } from "react";
 import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
 import * as THREE from "three";
@@ -33,7 +33,6 @@ function Popup({ onClose, title, image, data }) {
                 flexDirection: "column",
             }}
         >
-            {/* Botón de cierre */}
             <button
                 onClick={onClose}
                 style={{
@@ -48,7 +47,6 @@ function Popup({ onClose, title, image, data }) {
                 ✕
             </button>
 
-            {/* Imagen */}
             <img
                 src={image}
                 alt={title}
@@ -59,7 +57,6 @@ function Popup({ onClose, title, image, data }) {
                 }}
             />
 
-            {/* Información */}
             <h2 style={{ margin: "0 0 10px 0" }}>{title}</h2>
             {data.map((line, index) => (
                 <p key={index} style={{ margin: "0 0 5px 0" }}>
@@ -75,11 +72,8 @@ function BuildingModel({ path, color, position, scale, rotation = [0, 0, 0], onS
     const { scene } = useGLTF(path);
     const [hovered, setHovered] = useState(false);
 
-    // Aplicar rotación si scene está cargada
     useEffect(() => {
-        if (scene) {
-            scene.rotation.set(rotation[0], rotation[1], rotation[2]);
-        }
+        if (scene) scene.rotation.set(rotation[0], rotation[1], rotation[2]);
     }, [scene, rotation]);
 
     useEffect(() => {
@@ -114,7 +108,6 @@ function BuildingModel({ path, color, position, scale, rotation = [0, 0, 0], onS
     );
 }
 
-
 // ================= HOME =================
 function HomeWithModel() {
     const [popupData, setPopupData] = useState(null);
@@ -127,37 +120,105 @@ function HomeWithModel() {
             image: "/images/edificioA_real.jpg",
             title: "Edificio A",
             data: [
-                "📍 Ubicación: Zona Norte del Campus",
-                "🏢 Uso: Laboratorios de Ingeniería",
+                "📍 Zona Norte del Campus",
+                "🏢 Laboratorios de Ingeniería",
                 "👩‍🏫 Aulas: 10 | Laboratorios: 4",
             ],
-            position: [-80, 0, 0],
+            position: [-80, 0, 25],
             scale: [1.5, 1.5, 1.5],
-            rotation: [0,  Math.PI , 0],
+            rotation: [0, Math.PI, 0],
+        },
+        {
+            id: "B",
+            path: "/models/EDIFICIOB.glb",
+            color: "blue",
+            image: "/images/edificioB_real.jpg",
+            title: "Edificio B",
+            data: [
+                "📍 Junto al Edificio A",
+                "🏫 Aulas teóricas y oficinas académicas",
+                "👩‍🏫 Aulas: 8 | Oficinas: 3",
+            ],
+            position: [-80, 0, -100],
+            scale: [2, 3.5, 3],
+            rotation: [0, 270 * Math.PI / 180, 0],
+        },
+        {
+            id: "C",
+            path: "/models/EDIFICIOC.glb",
+            color: "green",
+            image: "/images/edificioC_real.jpg",
+            title: "Edificio C",
+            data: [
+                "📍 Frente al edificio A y B",
+                "🧪 Laboratorios de química y biología",
+                "🧫 Laboratorios: 5 | Oficinas: 2",
+            ],
+            position: [-150, 0, -180],
+            scale: [2, 3.5, 3],
+            rotation: [0, 270 * Math.PI / 180, 0],
+        },
+        {
+            id: "D",
+            path: "/models/EDIFICIOD.glb",
+            color: "purple",
+            image: "/images/edificioD_real.jpg",
+            title: "Edificio D",
+            data: [
+                "📍 Zona Oeste",
+                "💻 Laboratorios de informática",
+                "👩‍💻 Aulas: 6 | Laboratorios: 3",
+            ],
+            position: [-150, 0, -280],
+            scale: [2, 3.5, 3],
+            rotation: [0, 270 * Math.PI / 180, 0],
+        },
+        {
+            id: "E",
+            path: "/models/EDIFICIOE.glb",
+            color: "yellow",
+            image: "/images/edificioE_real.jpg",
+            title: "Edificio E",
+            data: [
+                "📍 Zona Central",
+                "📚 Biblioteca y salas de estudio",
+                "🪑 Salas: 4 | Cubículos: 6",
+            ],
+            position: [80, 0, 25],
+            scale: [2, 3.5, 3],
+            rotation: [0,  90 * Math.PI / 180, 0],
+        },
+        {
+            id: "I",
+            path: "/models/EDIFICIOI.glb",
+            color: "orange",
+            image: "/images/edificioI_real.jpg",
+            title: "Edificio I",
+            data: [
+                "📍 Zona Este",
+                "⚙️ Ingeniería Industrial",
+                "👷 Talleres: 3 | Oficinas: 2",
+            ],
+            position: [-250, 0, -280],
+            scale: [2, 3.5, 3],
+            rotation: [0, 270 * Math.PI / 180, 0],
         },
         {
             id: "IND",
             path: "/models/EDIFICIOINDUSTRIAL.glb",
             color: "orange",
             image: "/images/edificioIndustrial_real.jpg",
-            title: "Edificio de Ingeniería Industrial",
-            data: [
-                "📍 Ubicación: Zona Este del Campus",
-                "⚙️ Uso: Aulas y talleres de Ingeniería Industrial",
-                "👷‍♀️ Aulas: 8 | Talleres: 3 | Oficinas: 2",
-            ],
-            position: [250, 0, -30],
+            title: "Edificio Industrial",
+            data: ["📍 Zona Este", "⚙️ Talleres"],
+            position: [250, 0, 5],
             scale: [3, 5, 4],
-            rotation: [0, Math.PI, 0],
+            rotation: [0, Math.PI, 0]
         },
     ];
 
     return (
         <div style={{ width: "100%", height: "100vh" }}>
-            <Canvas
-                camera={{ position: [0, 150, 300], fov: 50 }}
-                style={{ background: "#b3e5ff" }}
-            >
+            <Canvas camera={{ position: [0, 150, 300], fov: 50 }} style={{ background: "#b3e5ff" }}>
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[15, 20, 10]} />
 
@@ -174,12 +235,13 @@ function HomeWithModel() {
                 ))}
 
                 <OrbitControls
-                    minPolarAngle={Math.PI / 4}
-                    maxPolarAngle={Math.PI / 2}
-                    enablePan={true}
-                    enableZoom={true}
-                    minDistance={20}
-                    maxDistance={500}
+                    enablePan
+                    enableZoom
+                    enableRotate
+                    minDistance={50}
+                    maxDistance={600}
+                    minPolarAngle={Math.PI / 6}
+                    maxPolarAngle={Math.PI / 2.5}
                 />
             </Canvas>
 
