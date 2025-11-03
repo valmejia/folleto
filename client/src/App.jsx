@@ -218,7 +218,7 @@ function HomeWithModel() {
     ];
 
     return (
-        <div style={{ width: "100%", height: "100vh" }}>
+        <div style={{ width: "100%", height: "100vh", position: "relative" }}>
             <Canvas camera={{ position: [0, 150, 300], fov: 50 }} style={{ background: "#b3e5ff" }}>
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[15, 20, 10]} />
@@ -245,11 +245,21 @@ function HomeWithModel() {
                     maxPolarAngle={Math.PI / 2.5}
                 />
 
-                <Compass  />
+                <Compass />
             </Canvas>
 
+            {/* 🔹 Renderizar Popup si popupData no es null */}
+            {popupData && (
+                <Popup
+                    onClose={() => setPopupData(null)}
+                    title={popupData.title}
+                    image={popupData.image}
+                    data={popupData.data}
+                />
+            )}
         </div>
     );
+
 }
 
 // ================= APP =================
