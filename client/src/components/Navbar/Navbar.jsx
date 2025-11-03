@@ -45,8 +45,8 @@ function Navbar() {
     const handleOpenTramites = (event) => setAnchorTramites(event.currentTarget);
     const handleCloseTramites = () => setAnchorTramites(null);
 
-    const carreras = ["Ingeniería", "Medicina", "Arquitectura", "Derecho"];
-    const tramites = ["Inscripción", "Certificados", "Pagos", "Horario"];
+    const carreras = ["Gastronomia", "Contaduría Pública", "Ingeniería en sistemas computacionales", "Ingeniería Ambiental","Ingeniería en Energías Renovables", "Ingeniería en Administracion", "Ingeniería en sistemas automotrices", "Ingeniería en Tecnologías de la Información y Comunicaciones"];
+    const tramites = ["Servicio social ", "Ingles", "Creditos complementarios", "Residencia Profesional"];
 
     const { isLoggedIn, isLoading, user, logOutUser } = useContext(AuthContext);
 
