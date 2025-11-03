@@ -4,72 +4,30 @@ import HomePage from "./pages/HomePage/HomePage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import SignupPage from "./pages/SignupPage/SignupPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
-
 import Navbar from "./components/Navbar/Navbar";
 import IsPrivate from "./components/IsPrivate/IsPrivate";
 import IsAnon from "./components/IsAnon/IsAnon";
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
-import { useState, useEffect } from "react";
-import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
-import Compass from "./components/Compass/Compass";
+import { useState, useEffect, useRef } from "react";
 import * as THREE from "three";
 
-// ================= POPUP =================
-function Popup({ onClose, title, image, data }) {
-    return (
-        <div
-            style={{
-                position: "fixed",
-                top: "100px",
-                left: "40px",
-                bottom: "40px",
-                width: "320px",
-                background: "white",
-                borderRadius: "24px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                padding: "20px",
-                display: "flex",
-                flexDirection: "column",
-            }}
-        >
-            <button
-                onClick={onClose}
-                style={{
-                    alignSelf: "flex-end",
-                    background: "none",
-                    border: "none",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                    color: "#bfc3c9",
-                }}
-            >
-                ✕
-            </button>
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import ContactPhoneIcon from "@mui/icons-material/ContactPhone";
+import InfoIcon from "@mui/icons-material/Info";
+import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
+import Compass from "./components/Compass/Compass";
 
-            <img
-                src={image}
-                alt={title}
-                style={{
-                    width: "100%",
-                    borderRadius: "16px",
-                    marginBottom: "15px",
-                }}
-            />
-
-            <h2 style={{ margin: "0 0 10px 0" }}>{title}</h2>
-            {data.map((line, index) => (
-                <p key={index} style={{ margin: "0 0 5px 0" }}>
-                    {line}
-                </p>
-            ))}
-        </div>
-    );
-}
-
-// ================= MODELO DE EDIFICIO =================
-function BuildingModel({ path, color, position, scale, rotation = [0, 0, 0], onSelect }) {
+// ================= COMPONENTE DE EDIFICIO =================
+function BuildingModel({
+                           path,
+                           color,
+                           position,
+                           scale,
+                           rotation = [0, 0, 0],
+                           onSelect,
+                       }) {
     const { scene } = useGLTF(path);
     const [hovered, setHovered] = useState(false);
 
@@ -78,14 +36,15 @@ function BuildingModel({ path, color, position, scale, rotation = [0, 0, 0], onS
     }, [scene, rotation]);
 
     useEffect(() => {
-        scene.traverse((child) => {
-            if (child.isMesh) {
-                child.material.emissive = hovered
-                    ? new THREE.Color(color)
-                    : new THREE.Color("black");
-                child.material.emissiveIntensity = hovered ? 0.5 : 0;
-            }
-        });
+        if (scene)
+            scene.traverse((child) => {
+                if (child.isMesh) {
+                    child.material.emissive = hovered
+                        ? new THREE.Color(color)
+                        : new THREE.Color("black");
+                    child.material.emissiveIntensity = hovered ? 0.5 : 0;
+                }
+            });
     }, [hovered, scene, color]);
 
     return (
@@ -96,35 +55,127 @@ function BuildingModel({ path, color, position, scale, rotation = [0, 0, 0], onS
             onPointerOver={(e) => {
                 e.stopPropagation();
                 setHovered(true);
+                onSelect(position, true); // avisa al padre que está hovered
             }}
             onPointerOut={(e) => {
                 e.stopPropagation();
                 setHovered(false);
+                onSelect(position, false); // avisa que dejó de estar hovered
             }}
             onClick={(e) => {
                 e.stopPropagation();
-                onSelect();
+                onSelect(position, hovered);
             }}
         />
     );
 }
 
-// ================= HOME =================
+// ================= ÍCONOS ANIMADOS =================
+function AnimatedIcons({ selectedBuilding, isHovered }) {
+    const icons = [
+        {
+            Icon: AssignmentIcon,
+            offset: new THREE.Vector3(-40, 0, 0),
+            color: "#1e88e5",
+            label: "Trámites",
+        },
+        {
+            Icon: ContactPhoneIcon,
+            offset: new THREE.Vector3(0, 0, 40),
+            color: "#43a047",
+            label: "Contacto",
+        },
+        {
+            Icon: InfoIcon,
+            offset: new THREE.Vector3(40, 0, 0),
+            color: "#fbc02d",
+            label: "Información",
+        },
+    ];
+
+    const [progress, setProgress] = useState(0);
+
+    useFrame(() => {
+        setProgress((prev) => {
+            if (isHovered) {
+                // Animación al abrir
+                return Math.min(prev + 0.05, 1);
+            } else {
+                // Animación al cerrar
+                return Math.max(prev - 0.05, 0);
+            }
+        });
+    });
+
+    return (
+        <>
+            {progress > 0 &&
+                icons.map((item, i) => {
+                    const pos = new THREE.Vector3().lerpVectors(
+                        new THREE.Vector3(0, 0, 0),
+                        item.offset,
+                        progress
+                    );
+
+                    return (
+                        <Html
+                            key={i}
+                            position={[
+                                selectedBuilding.position[0] + pos.x,
+                                selectedBuilding.position[1] + 40 + pos.y,
+                                selectedBuilding.position[2] + pos.z,
+                            ]}
+                        >
+                            <div
+                                onClick={() =>
+                                    alert(
+                                        `${item.label} del ${selectedBuilding.title}`
+                                    )
+                                }
+                                style={{
+                                    fontSize: 40,
+                                    color: item.color,
+                                    cursor: "pointer",
+                                    background: "white",
+                                    borderRadius: "50%",
+                                    padding: "8px",
+                                    boxShadow:
+                                        "0 4px 10px rgba(0,0,0,0.2)",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    transform: `scale(${
+                                        0.5 + progress * 0.5
+                                    })`,
+                                    opacity: progress,
+                                    transition:
+                                        "transform 0.2s, opacity 0.2s",
+                                }}
+                            >
+                                <item.Icon
+                                    style={{
+                                        fontSize: 40,
+                                        color: item.color,
+                                    }}
+                                />
+                            </div>
+                        </Html>
+                    );
+                })}
+        </>
+    );
+}
+
+// ================= HOME CON MODELO =================
 function HomeWithModel() {
-    const [popupData, setPopupData] = useState(null);
+    const [selectedBuilding, setSelectedBuilding] = useState(null);
 
     const edificios = [
         {
             id: "A",
             path: "/models/EDIFICIOA.glb",
             color: "red",
-            image: "/images/edificioA_real.jpg",
             title: "Edificio A",
-            data: [
-                "📍 Zona Norte del Campus",
-                "🏢 Laboratorios de Ingeniería",
-                "👩‍🏫 Aulas: 10 | Laboratorios: 4",
-            ],
             position: [-80, 0, 25],
             scale: [1.5, 1.5, 1.5],
             rotation: [0, Math.PI, 0],
@@ -133,96 +184,77 @@ function HomeWithModel() {
             id: "B",
             path: "/models/EDIFICIOB.glb",
             color: "blue",
-            image: "/images/edificioB_real.jpg",
             title: "Edificio B",
-            data: [
-                "📍 Junto al Edificio A",
-                "🏫 Aulas teóricas y oficinas académicas",
-                "👩‍🏫 Aulas: 8 | Oficinas: 3",
-            ],
             position: [-80, 0, -100],
             scale: [2, 3.5, 3],
-            rotation: [0, 270 * Math.PI / 180, 0],
+            rotation: [0, (270 * Math.PI) / 180, 0],
         },
         {
             id: "C",
             path: "/models/EDIFICIOC.glb",
             color: "green",
-            image: "/images/edificioC_real.jpg",
             title: "Edificio C",
-            data: [
-                "📍 Frente al edificio A y B",
-                "🧪 Laboratorios de química y biología",
-                "🧫 Laboratorios: 5 | Oficinas: 2",
-            ],
             position: [-150, 0, -180],
             scale: [2, 3.5, 3],
-            rotation: [0, 270 * Math.PI / 180, 0],
+            rotation: [0, (270 * Math.PI) / 180, 0],
         },
         {
             id: "D",
             path: "/models/EDIFICIOD.glb",
             color: "purple",
-            image: "/images/edificioD_real.jpg",
             title: "Edificio D",
-            data: [
-                "📍 Zona Oeste",
-                "💻 Laboratorios de informática",
-                "👩‍💻 Aulas: 6 | Laboratorios: 3",
-            ],
             position: [-150, 0, -280],
             scale: [2, 3.5, 3],
-            rotation: [0, 270 * Math.PI / 180, 0],
+            rotation: [0, (270 * Math.PI) / 180, 0],
         },
         {
             id: "E",
             path: "/models/EDIFICIOE.glb",
             color: "yellow",
-            image: "/images/edificioE_real.jpg",
             title: "Edificio E",
-            data: [
-                "📍 Zona Central",
-                "📚 Biblioteca y salas de estudio",
-                "🪑 Salas: 4 | Cubículos: 6",
-            ],
             position: [80, 0, 25],
             scale: [2, 3.5, 3],
-            rotation: [0,  90 * Math.PI / 180, 0],
+            rotation: [0, (90 * Math.PI) / 180, 0],
         },
         {
             id: "I",
             path: "/models/EDIFICIOI.glb",
             color: "orange",
-            image: "/images/edificioI_real.jpg",
             title: "Edificio I",
-            data: [
-                "📍 Zona Este",
-                "⚙️ Ingeniería Industrial",
-                "👷 Talleres: 3 | Oficinas: 2",
-            ],
             position: [-250, 0, -280],
             scale: [2, 3.5, 3],
-            rotation: [0, 270 * Math.PI / 180, 0],
+            rotation: [0, (270 * Math.PI) / 180, 0],
         },
         {
             id: "IND",
             path: "/models/EDIFICIOINDUSTRIAL.glb",
             color: "orange",
-            image: "/images/edificioIndustrial_real.jpg",
             title: "Edificio Industrial",
-            data: ["📍 Zona Este", "⚙️ Talleres"],
             position: [250, 0, 5],
             scale: [3, 5, 4],
-            rotation: [0, Math.PI, 0]
+            rotation: [0, Math.PI, 0],
         },
     ];
 
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-            <Canvas camera={{ position: [0, 150, 300], fov: 50 }} style={{ background: "#b3e5ff" }}>
+            <Canvas
+                camera={{ position: [0, 150, 300], fov: 50 }}
+                style={{ background: "#b3e5ff" }}
+            >
+                {/* Luz */}
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[15, 20, 10]} />
 
+                {/* Piso verde
+                <mesh rotation-x={-Math.PI / 2} position={[0, -2, 0]}>
+                    <planeGeometry args={[2000, 2000]} />
+                    <meshStandardMaterial color="#37F731" />
+                </mesh>
+                */}
+
+
+                {/* Edificios */}
                 {edificios.map((edificio) => (
                     <BuildingModel
                         key={edificio.id}
@@ -231,9 +263,23 @@ function HomeWithModel() {
                         position={edificio.position}
                         scale={edificio.scale}
                         rotation={edificio.rotation}
-                        onSelect={() => setPopupData(edificio)}
+                        onSelect={(pos, isHovered) =>
+                            setSelectedBuilding({
+                                ...edificio,
+                                position: pos,
+                                isHovered,
+                            })
+                        }
                     />
                 ))}
+
+                {/* Íconos alrededor del edificio */}
+                {selectedBuilding && (
+                    <AnimatedIcons
+                        selectedBuilding={selectedBuilding}
+                        isHovered={selectedBuilding.isHovered}
+                    />
+                )}
 
                 <OrbitControls
                     enablePan
@@ -247,27 +293,15 @@ function HomeWithModel() {
 
                 <Compass />
             </Canvas>
-
-            {/* 🔹 Renderizar Popup si popupData no es null */}
-            {popupData && (
-                <Popup
-                    onClose={() => setPopupData(null)}
-                    title={popupData.title}
-                    image={popupData.image}
-                    data={popupData.data}
-                />
-            )}
         </div>
     );
-
 }
 
-// ================= APP =================
+// ================= APP PRINCIPAL =================
 function App() {
     return (
         <div className="App">
             <Navbar />
-
             <Routes>
                 <Route path="/" element={<HomeWithModel />} />
                 <Route path="/menuDeCafeteria" element={<MenuDeCafeteria />} />
