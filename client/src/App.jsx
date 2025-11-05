@@ -1,6 +1,5 @@
 import "./App.css";
 import { Routes, Route, useLocation } from "react-router-dom";
-import HomePage from "./pages/HomePage/HomePage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import SignupPage from "./pages/SignupPage/SignupPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
@@ -36,7 +35,11 @@ function BuildingModel({
                        }) {
     const { scene } = useGLTF(path);
     const [hovered, setHovered] = useState(false);
-    const isHighlighted = selectedBuilding?.id === id;
+    const isHighlighted =
+        Array.isArray(selectedBuilding)
+            ? selectedBuilding.some((b) => b.id === id)
+            : selectedBuilding?.id === id;
+
 
     // Rotación inicial
     useEffect(() => {
@@ -101,6 +104,7 @@ function AnimatedIcons({ building, visible }) {
 
     const [progress, setProgress] = useState(0);
     const [currentBuilding, setCurrentBuilding] = useState(building);
+    const { highlightedBuildings } = useContext(MapContext);
 
     useEffect(() => {
         if (building) setCurrentBuilding(building);
@@ -114,55 +118,68 @@ function AnimatedIcons({ building, visible }) {
         });
     });
 
-    if (!currentBuilding && progress <= 0) return null;
+    // 🔹 Si no hay building o progreso = 0 → no mostrar nada
+    if (!currentBuilding || progress <= 0) return null;
+
+    // 🔹 Normaliza a array para soportar uno o varios edificios
+    const buildingsArray = Array.isArray(currentBuilding)
+        ? currentBuilding
+        : [currentBuilding];
 
     return (
         <>
-            {icons.map((item, i) => {
-                const pos = new THREE.Vector3().lerpVectors(
-                    new THREE.Vector3(0, 0, 0),
-                    item.offset,
-                    progress
-                );
+            {buildingsArray.map((b, index) =>
+                icons.map((item, i) => {
+                    // Si b.position no está definido, se salta
+                    if (!b.position) return null;
 
-                return (
-                    <Html
-                        key={i}
-                        position={[
-                            currentBuilding.position[0] + pos.x,
-                            currentBuilding.position[1] + 40 + pos.y,
-                            currentBuilding.position[2] + pos.z,
-                        ]}
-                        center
-                    >
-                        <div
-                            onClick={() => alert(`${item.label} del ${currentBuilding.id}`)}
-                            style={{
-                                cursor: "pointer",
-                                transform: `scale(${0.8 + 0.2 * progress})`,
-                                opacity: progress,
-                                transition: "transform 0.2s ease, opacity 0.2s ease",
-                                background: "none",
-                                border: "none",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}
-                            onMouseEnter={(e) =>
-                                (e.currentTarget.style.transform = `scale(${1 + 0.2 * progress})`)
-                            }
-                            onMouseLeave={(e) =>
-                                (e.currentTarget.style.transform = `scale(${0.8 + 0.2 * progress})`)
-                            }
+                    const pos = new THREE.Vector3().lerpVectors(
+                        new THREE.Vector3(0, 0, 0),
+                        item.offset,
+                        progress
+                    );
+
+                    return (
+                        <Html
+                            key={`${b.id}-${i}`}
+                            position={[
+                                b.position[0] + pos.x,
+                                b.position[1] + 40 + pos.y,
+                                b.position[2] + pos.z,
+                            ]}
+                            center
                         >
-                            <item.Icon style={{ fontSize: 32, color: "black" }} />
-                        </div>
-                    </Html>
-                );
-            })}
+                            <div
+                                onClick={() => alert(`${item.label} del ${b.id}`)}
+                                style={{
+                                    cursor: "pointer",
+                                    transform: `scale(${0.8 + 0.2 * progress})`,
+                                    opacity: progress,
+                                    transition: "transform 0.2s ease, opacity 0.2s ease",
+                                    background: "none",
+                                    border: "none",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                }}
+                                onMouseEnter={(e) =>
+                                    (e.currentTarget.style.transform = `scale(${1 + 0.2 * progress})`)
+                                }
+                                onMouseLeave={(e) =>
+                                    (e.currentTarget.style.transform = `scale(${0.8 + 0.2 * progress})`)
+                                }
+                            >
+                                <item.Icon style={{ fontSize: 32, color: "black" }} />
+                            </div>
+                        </Html>
+                    );
+                })
+            )}
         </>
     );
 }
+
+
 
 // ==========================================================
 // 🔹 HOME CON MODELO
@@ -170,7 +187,7 @@ function AnimatedIcons({ building, visible }) {
 function HomeWithModel() {
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [hoveredBuilding, setHoveredBuilding] = useState(null);
-    const { highlightedBuilding, trigger } = useContext(MapContext); // ← trigger nuevo
+    const { highlightedBuildings, trigger } = useContext(MapContext);
     const mountedRef = useRef(false);
 
     const edificios = [
@@ -191,25 +208,30 @@ function HomeWithModel() {
         };
     }, []);
 
-    // ✅ Forzar reiluminación incluso si es el mismo edificio
     useEffect(() => {
         if (!mountedRef.current) return;
-        if (highlightedBuilding) {
-            const buildingData = edificios.find((b) => b.id === highlightedBuilding);
-            if (buildingData) {
-                setSelectedBuilding(null);
-                setTimeout(() => {
-                    setSelectedBuilding({
-                        id: buildingData.id,
-                        position: buildingData.position,
-                        color: buildingData.color,
-                    });
-                }, 100);
-            }
+
+        if (Array.isArray(highlightedBuildings) && highlightedBuildings.length > 0) {
+            // Limpia selección previa
+            setSelectedBuilding(null);
+
+            // Ilumina todos los edificios de la lista
+            setTimeout(() => {
+                const highlightedData = edificios
+                    .filter((b) => highlightedBuildings.includes(b.id))
+                    .map((b) => ({
+                        id: b.id,
+                        position: b.position,
+                        color: b.color,
+                    }));
+                setSelectedBuilding(highlightedData);
+            }, 100);
         } else {
             setSelectedBuilding(null);
         }
-    }, [highlightedBuilding, trigger]); // ← trigger añadido aquí
+    }, [highlightedBuildings, trigger]);
+
+
 
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
@@ -236,11 +258,18 @@ function HomeWithModel() {
                     <BuildingModel
                         key={edificio.id}
                         {...edificio}
-                        selectedBuilding={selectedBuilding}
+                        selectedBuilding={
+                            Array.isArray(selectedBuilding)
+                                ? selectedBuilding.find((b) => b.id === edificio.id)
+                                : selectedBuilding?.id === edificio.id
+                                    ? selectedBuilding
+                                    : null
+                        }
                         onSelect={setSelectedBuilding}
                         onHover={setHoveredBuilding}
                     />
                 ))}
+
 
                 {(hoveredBuilding || selectedBuilding) && (
                     <AnimatedIcons

@@ -51,7 +51,7 @@ function Navbar() {
     const [anchorCarrera, setAnchorCarrera] = useState(null);
     const [anchorTramites, setAnchorTramites] = useState(null);
     const { isLoggedIn, logOutUser } = useContext(AuthContext);
-    const { setHighlightedBuilding } = useContext(MapContext);
+    const { highlightBuildings, clearHighlights } = useContext(MapContext);
 
     const carreras = [
         "Gastronomía",
@@ -79,11 +79,10 @@ function Navbar() {
 
     const handleCarreraSelect = (carrera) => {
         if (carrera === "Ingeniería en Sistemas Computacionales") {
-
-            setHighlightedBuilding(null);
-            setTimeout(() => setHighlightedBuilding("A"), 50);
-        } else {
-            setHighlightedBuilding(null);
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings(["A", "B", "E"]), 50); // ilumina A y B
+        } else  {
+            clearHighlights(); // apaga si no es esa carrera
         }
         setAnchorCarrera(null);
     };

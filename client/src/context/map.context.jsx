@@ -2,18 +2,30 @@ import { createContext, useState } from "react";
 
 export const MapContext = createContext();
 
-export function MapProvider({ children }) {
-    const [highlightedBuilding, setHighlightedBuilding] = useState(null);
+export function MapProvider(props) {
+    const [highlightedBuildings, setHighlightedBuildings] = useState([]);
     const [trigger, setTrigger] = useState(0);
 
-    const selectBuilding = (id) => {
-        setHighlightedBuilding(id);
-        setTrigger((t) => t + 1); // 🔹 fuerza que el useEffect se dispare siempre
+    const highlightBuildings = (ids) => {
+        setHighlightedBuildings(ids);
+        setTrigger((t) => t + 1); // fuerza actualización
+    };
+
+    const clearHighlights = () => {
+        setHighlightedBuildings([]);
+        setTrigger((t) => t + 1);
     };
 
     return (
-        <MapContext.Provider value={{ highlightedBuilding, setHighlightedBuilding }}>
-            {children}
+        <MapContext.Provider
+            value={{
+                highlightedBuildings,
+                highlightBuildings,
+                clearHighlights,
+                trigger,
+            }}
+        >
+            {props.children}
         </MapContext.Provider>
     );
 }
