@@ -198,6 +198,7 @@ function HomeWithModel() {
         { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [80, 0, 25], scale: [2, 3.5, 3], rotation: [0, (90 * Math.PI) / 180, 0] },
         { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-250, 0, -280], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
         { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [250, 0, 5], scale: [3, 5, 4], rotation: [0, Math.PI, 0] },
+        { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [100, 0, -150], scale: [3, 3, 3], rotation: [0, (90 * Math.PI) / 180, 0] },
     ];
 
     useEffect(() => {
