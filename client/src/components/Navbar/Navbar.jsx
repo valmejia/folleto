@@ -18,17 +18,46 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/auth.context";
 import { MapContext } from "../../context/map.context";
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ComputerIcon from '@mui/icons-material/Computer';
+import NaturePeopleIcon from '@mui/icons-material/NaturePeople';
+import SolarPowerIcon from '@mui/icons-material/SolarPower';
+import BusinessIcon from '@mui/icons-material/Business';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import DeviceHubIcon from '@mui/icons-material/DeviceHub';
+import GroupIcon from '@mui/icons-material/Group';            // Servicio Social
+import CreditScoreIcon from '@mui/icons-material/CreditScore';// Créditos Complementarios
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';// Residencia Profesional
+
 
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
     borderRadius: "20px",
-    backgroundColor: "#eff3f8",
+    background: "rgba(255, 255, 255, 0.2)",   // transparente como la navbar
+    backdropFilter: "blur(10px)",             // blur como la navbar
+    WebkitBackdropFilter: "blur(10px)",      // para Safari
     marginLeft: "auto",
     width: "220px",
     transition: "all 0.3s ease",
-    "&:hover": { backgroundColor: "#e8ecf2" },
-    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.08)",
+    "&:hover": {
+        background: "rgba(255, 255, 255, 0.25)", // hover más visible
+    },
+    boxShadow: "0 4px 20px rgba(0,0,0,0.05)",    // sombra suave
 }));
+
+const StyledInputBase = styled(InputBase)(() => ({
+    color: "#111",                               // igual que los botones de navbar
+    paddingLeft: "calc(1em + 36px)",
+    width: "100%",
+    "&::placeholder": {
+        color: "#bfc3c9",                        // placeholder gris suave
+    },
+    "& .MuiInputBase-input": {
+        transition: "all 0.3s ease",
+    },
+}));
+
 
 const SearchIconWrapper = styled("div")(() => ({
     padding: "0 14px",
@@ -40,12 +69,6 @@ const SearchIconWrapper = styled("div")(() => ({
     color: "#bfc3c9",
 }));
 
-const StyledInputBase = styled(InputBase)(() => ({
-    color: "#000",
-    paddingLeft: "calc(1em + 36px)",
-    width: "100%",
-    "&::placeholder": { color: "#bfc3c9" },
-}));
 
 function Navbar() {
     const [anchorCarrera, setAnchorCarrera] = useState(null);
@@ -62,14 +85,33 @@ function Navbar() {
         "Ingeniería en Administración",
         "Ingeniería en Sistemas Automotrices",
         "Ingeniería en TIC'S",
-    ];
+    ]
+
+    const carreraIcons = {
+        "Gastronomía": <RestaurantMenuIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Contaduría Pública": <AttachMoneyIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería en Sistemas Computacionales": <ComputerIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería Ambiental": <NaturePeopleIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería en Energías Renovables": <SolarPowerIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería en Administración": <BusinessIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería en Sistemas Automotrices": <DirectionsCarIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería en TIC'S": <DeviceHubIcon sx={{ mr: 1, fontSize: 18 }} />,
+    };
 
     const tramites = [
         "Servicio Social",
         "Inglés",
-        "Créditos complementarios",
+        "Créditos Complementarios",
         "Residencia Profesional",
     ];
+
+    const tramiteIcons = {
+        "Servicio Social": <GroupIcon sx={{ fontSize: 18 }} />,
+        "Inglés": <SchoolIcon sx={{ fontSize: 18 }} />,
+        "Créditos Complementarios": <CreditScoreIcon sx={{ fontSize: 18 }} />,
+        "Residencia Profesional": <WorkOutlineIcon sx={{ fontSize: 18 }} />,
+    };
+
 
     const handleClickCarrera = (event) => setAnchorCarrera(event.currentTarget);
     const handleCloseCarrera = () => setAnchorCarrera(null);
@@ -163,15 +205,12 @@ function Navbar() {
                         open={Boolean(anchorCarrera)}
                         onClose={handleCloseCarrera}
                         PaperProps={{
-                            sx: {
-                                mt: 1,
-                                borderRadius: 2,
-                                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                            },
+                            sx: { mt: 1, borderRadius: 2, boxShadow: "0 4px 10px rgba(0,0,0,0.1)" },
                         }}
                     >
                         {carreras.map((carrera) => (
                             <MenuItem key={carrera} onClick={() => handleCarreraSelect(carrera)}>
+                                {carreraIcons[carrera]}
                                 {carrera}
                             </MenuItem>
                         ))}
@@ -194,9 +233,13 @@ function Navbar() {
                     >
                         {tramites.map((tramite) => (
                             <MenuItem key={tramite} onClick={handleCloseTramites}>
-                                {tramite}
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                    {tramiteIcons[tramite]}
+                                    {tramite}
+                                </Box>
                             </MenuItem>
                         ))}
+
                     </Menu>
 
                     <Button sx={buttonStyle} component={Link} to="/menuDeCafeteria">
