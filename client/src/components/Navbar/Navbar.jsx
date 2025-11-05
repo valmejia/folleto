@@ -81,6 +81,9 @@ function Navbar() {
         if (carrera === "Ingeniería en Sistemas Computacionales") {
             clearHighlights(); // limpia cualquier highlight anterior
             setTimeout(() => highlightBuildings(["A", "B", "E"]), 50); // ilumina A y B
+        } else if (carrera === "Gastronomía") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings(["C", "B", "D", "E"]), 50);
         } else  {
             clearHighlights(); // apaga si no es esa carrera
         }
