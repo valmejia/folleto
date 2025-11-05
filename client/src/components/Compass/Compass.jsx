@@ -24,7 +24,6 @@ export default function CompassMinimal() {
     return (
         <Html
             style={{
-                position: "fixed",
                 bottom: "-220px",
                 left: "560px",
                 transform: "translateX(-50%)",

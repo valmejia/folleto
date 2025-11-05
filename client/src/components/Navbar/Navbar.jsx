@@ -17,8 +17,8 @@ import LocalCafeIcon from "@mui/icons-material/LocalCafe";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../../context/auth.context";
+import { MapContext } from "../../context/map.context";
 
-// 🔍 Barra de búsqueda
 const Search = styled("div")(({ theme }) => ({
     position: "relative",
     borderRadius: "20px",
@@ -26,9 +26,7 @@ const Search = styled("div")(({ theme }) => ({
     marginLeft: "auto",
     width: "220px",
     transition: "all 0.3s ease",
-    "&:hover": {
-        backgroundColor: "#e8ecf2",
-    },
+    "&:hover": { backgroundColor: "#e8ecf2" },
     boxShadow: "inset 0 1px 3px rgba(0,0,0,0.08)",
 }));
 
@@ -46,16 +44,14 @@ const StyledInputBase = styled(InputBase)(() => ({
     color: "#000",
     paddingLeft: "calc(1em + 36px)",
     width: "100%",
-    "&::placeholder": {
-        color: "#bfc3c9",
-    },
+    "&::placeholder": { color: "#bfc3c9" },
 }));
 
 function Navbar() {
     const [anchorCarrera, setAnchorCarrera] = useState(null);
     const [anchorTramites, setAnchorTramites] = useState(null);
-
     const { isLoggedIn, logOutUser } = useContext(AuthContext);
+    const { setHighlightedBuilding } = useContext(MapContext);
 
     const carreras = [
         "Gastronomía",
@@ -65,7 +61,7 @@ function Navbar() {
         "Ingeniería en Energías Renovables",
         "Ingeniería en Administración",
         "Ingeniería en Sistemas Automotrices",
-        "Ingeniería en TIC",
+        "Ingeniería en TIC'S",
     ];
 
     const tramites = [
@@ -75,20 +71,19 @@ function Navbar() {
         "Residencia Profesional",
     ];
 
-    // 🎓 Carreras
-    const handleClickCarrera = (event) => {
-        setAnchorCarrera(event.currentTarget);
-    };
-    const handleCloseCarrera = () => {
-        setAnchorCarrera(null);
-    };
+    const handleClickCarrera = (event) => setAnchorCarrera(event.currentTarget);
+    const handleCloseCarrera = () => setAnchorCarrera(null);
 
-    // 🧾 Trámites
-    const handleClickTramites = (event) => {
-        setAnchorTramites(event.currentTarget);
-    };
-    const handleCloseTramites = () => {
-        setAnchorTramites(null);
+    const handleClickTramites = (event) => setAnchorTramites(event.currentTarget);
+    const handleCloseTramites = () => setAnchorTramites(null);
+
+    const handleCarreraSelect = (carrera) => {
+        if (carrera === "Ingeniería en Sistemas Computacionales") {
+            setHighlightedBuilding("A"); // 👈 activa el edificio A
+        } else {
+            setHighlightedBuilding(null); // limpia cualquier selección
+        }
+        setAnchorCarrera(null);
     };
 
     const buttonStyle = {
@@ -106,27 +101,14 @@ function Navbar() {
         },
     };
 
-    const fullWidthMenuProps = {
-        PaperProps: {
-            sx: {
-                width: "100vw",
-                maxWidth: "100vw",
-                borderRadius: 0,
-                background: "#fafafa",
-            },
-        },
-        anchorOrigin: { vertical: "bottom", horizontal: "left" },
-        transformOrigin: { vertical: "top", horizontal: "left" },
-    };
-
     return (
         <AppBar
             position="sticky"
             sx={{
-                width: "90%",               // ancho menor para centrar
+                width: "90%",
                 maxWidth: 1000,
-                mx: "auto",                 // centrado horizontal
-                mt: 2,                      // margen superior
+                mx: "auto",
+                mt: 2,
                 borderRadius: 3,
                 background: "rgba(255, 255, 255, 0.2)",
                 backdropFilter: "blur(10px)",
@@ -136,22 +118,20 @@ function Navbar() {
         >
             <Toolbar
                 sx={{
-                    minHeight: 50,          // navbar más pequeña
+                    minHeight: 50,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    px: 2,                  // padding horizontal
+                    px: 2,
                 }}
             >
-                {/* Contenido de la Navbar */}
                 <Box
                     component="img"
                     src="/logo.png"
                     alt="Logo"
-                    sx={{ height: 32, mr: 2 }} // logo más pequeño
+                    sx={{ height: 32, mr: 2 }}
                 />
 
-                {/* Botones y menús */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Button sx={buttonStyle} component={Link} to="/">
                         <MapIcon sx={{ fontSize: 18 }} /> Mapa
@@ -160,25 +140,62 @@ function Navbar() {
                     <Button sx={buttonStyle} onClick={handleClickCarrera}>
                         <SchoolIcon sx={{ fontSize: 18 }} /> Carreras
                     </Button>
+                    <Menu
+                        anchorEl={anchorCarrera}
+                        open={Boolean(anchorCarrera)}
+                        onClose={handleCloseCarrera}
+                        PaperProps={{
+                            sx: {
+                                mt: 1,
+                                borderRadius: 2,
+                                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                            },
+                        }}
+                    >
+                        {carreras.map((carrera) => (
+                            <MenuItem key={carrera} onClick={() => handleCarreraSelect(carrera)}>
+                                {carrera}
+                            </MenuItem>
+                        ))}
+                    </Menu>
 
                     <Button sx={buttonStyle} onClick={handleClickTramites}>
                         <AssignmentIcon sx={{ fontSize: 18 }} /> Trámites
                     </Button>
+                    <Menu
+                        anchorEl={anchorTramites}
+                        open={Boolean(anchorTramites)}
+                        onClose={handleCloseTramites}
+                        PaperProps={{
+                            sx: {
+                                mt: 1,
+                                borderRadius: 2,
+                                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                            },
+                        }}
+                    >
+                        {tramites.map((tramite) => (
+                            <MenuItem key={tramite} onClick={handleCloseTramites}>
+                                {tramite}
+                            </MenuItem>
+                        ))}
+                    </Menu>
 
                     <Button sx={buttonStyle} component={Link} to="/menuDeCafeteria">
                         <LocalCafeIcon sx={{ fontSize: 18 }} /> Cafetería
                     </Button>
                 </Box>
 
-                {/* Barra de búsqueda */}
                 <Search>
                     <SearchIconWrapper>
                         <SearchIcon sx={{ fontSize: 18 }} />
                     </SearchIconWrapper>
-                    <StyledInputBase placeholder="Buscar…" inputProps={{ "aria-label": "search" }} />
+                    <StyledInputBase
+                        placeholder="Buscar…"
+                        inputProps={{ "aria-label": "search" }}
+                    />
                 </Search>
 
-                {/* Cerrar sesión */}
                 {isLoggedIn && (
                     <Button onClick={logOutUser} sx={{ ml: 1, ...buttonStyle }}>
                         <LogoutIcon sx={{ fontSize: 18 }} /> Cerrar sesión
@@ -186,7 +203,6 @@ function Navbar() {
                 )}
             </Toolbar>
         </AppBar>
-
     );
 }
 

@@ -10,7 +10,8 @@ import IsAnon from "./components/IsAnon/IsAnon";
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
+import { MapContext } from "./context/map.context";
 import * as THREE from "three";
 
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -19,7 +20,9 @@ import InfoIcon from "@mui/icons-material/Info";
 import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
 import Compass from "./components/Compass/Compass";
 
-// ================= COMPONENTE DE EDIFICIO =================
+// ==========================================================
+// 🔹 COMPONENTE DE EDIFICIO
+// ==========================================================
 function BuildingModel({
                            id,
                            path,
@@ -34,22 +37,29 @@ function BuildingModel({
     const { scene } = useGLTF(path);
     const [hovered, setHovered] = useState(false);
 
+    const isHighlighted = selectedBuilding?.id === id;
+
+    // Rotación inicial
     useEffect(() => {
         if (!scene) return;
         scene.rotation.set(rotation[0], rotation[1], rotation[2]);
     }, [scene, rotation]);
 
+    // Iluminación dinámica (hover + selección + Navbar)
     useEffect(() => {
         if (!scene) return;
         scene.traverse((child) => {
             if (child.isMesh) {
-                child.material.emissive = hovered
-                    ? new THREE.Color(color)
-                    : new THREE.Color("black");
-                child.material.emissiveIntensity = hovered ? 0.5 : 0;
+                if (hovered || isHighlighted) {
+                    child.material.emissive = new THREE.Color(color);
+                    child.material.emissiveIntensity = isHighlighted ? 1.2 : 0.5;
+                } else {
+                    child.material.emissive = new THREE.Color("black");
+                    child.material.emissiveIntensity = 0;
+                }
             }
         });
-    }, [hovered, scene, color]);
+    }, [hovered, isHighlighted, scene, color]);
 
     if (!scene) return null;
 
@@ -80,7 +90,9 @@ function BuildingModel({
     );
 }
 
-// ================= ÍCONOS ANIMADOS =================
+// ==========================================================
+// 🔹 ÍCONOS ANIMADOS
+// ==========================================================
 function AnimatedIcons({ building, visible }) {
     const icons = [
         { Icon: AssignmentIcon, offset: new THREE.Vector3(-40, 0, 0), label: "Trámites" },
@@ -91,12 +103,10 @@ function AnimatedIcons({ building, visible }) {
     const [progress, setProgress] = useState(0);
     const [currentBuilding, setCurrentBuilding] = useState(building);
 
-    // Mantener el edificio mientras los íconos están animando
     useEffect(() => {
         if (building) setCurrentBuilding(building);
     }, [building]);
 
-    // Animación de apertura/cierre
     useFrame(() => {
         setProgress((prev) => {
             if (visible && prev < 1) return Math.min(prev + 0.05, 1);
@@ -110,7 +120,6 @@ function AnimatedIcons({ building, visible }) {
     return (
         <>
             {icons.map((item, i) => {
-                // Interpolación desde el centro hasta el offset según progress
                 const pos = new THREE.Vector3().lerpVectors(
                     new THREE.Vector3(0, 0, 0),
                     item.offset,
@@ -131,16 +140,14 @@ function AnimatedIcons({ building, visible }) {
                             onClick={() => alert(`${item.label} del ${currentBuilding.id}`)}
                             style={{
                                 cursor: "pointer",
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                width: 50,
-                                height: 50,
-                                borderRadius: "50%",
-                                boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
                                 transform: `scale(${0.8 + 0.2 * progress})`,
                                 opacity: progress,
                                 transition: "transform 0.2s ease, opacity 0.2s ease",
+                                background: "none",
+                                border: "none",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
                             }}
                             onMouseEnter={(e) =>
                                 (e.currentTarget.style.transform = `scale(${1 + 0.2 * progress})`)
@@ -149,7 +156,7 @@ function AnimatedIcons({ building, visible }) {
                                 (e.currentTarget.style.transform = `scale(${0.8 + 0.2 * progress})`)
                             }
                         >
-                            <item.Icon style={{ fontSize: 28, color: "black" }} />
+                            <item.Icon style={{ fontSize: 32, color: "black" }} />
                         </div>
                     </Html>
                 );
@@ -158,13 +165,15 @@ function AnimatedIcons({ building, visible }) {
     );
 }
 
-
-
-
-// ================= HOME CON MODELO =================
+// ==========================================================
+// 🔹 HOME CON MODELO
+// ==========================================================
 function HomeWithModel() {
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [hoveredBuilding, setHoveredBuilding] = useState(null);
+    const { highlightedBuilding } = useContext(MapContext);
+
+    const sceneRef = useRef();
 
     const edificios = [
         { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-80, 0, 25], scale: [1.5, 1.5, 1.5], rotation: [0, Math.PI, 0] },
@@ -177,18 +186,33 @@ function HomeWithModel() {
     ];
 
     const handleSelect = (building) => {
-        if (!building || selectedBuilding?.id === building.id) {
-            setSelectedBuilding(null);
-        } else {
-            setSelectedBuilding(building);
-        }
+        setSelectedBuilding((prev) =>
+            prev?.id === building?.id ? null : building
+        );
     };
+
+    // Si viene una selección desde Navbar (highlightedBuilding)
+    useEffect(() => {
+        if (highlightedBuilding) {
+            const buildingData = edificios.find((b) => b.id === highlightedBuilding);
+            if (buildingData) {
+                setSelectedBuilding({
+                    id: buildingData.id,
+                    position: buildingData.position,
+                    color: buildingData.color,
+                });
+            }
+        } else {
+            setSelectedBuilding(null);
+        }
+    }, [highlightedBuilding]);
 
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
             <Canvas
+                ref={sceneRef}
                 camera={{ position: [0, 150, 300], fov: 50 }}
-                gl={{ alpha: true }} // permite transparencia
+                gl={{ alpha: true }}
                 style={{ background: "#b3e5ff" }}
                 onPointerMissed={() => {
                     setSelectedBuilding(null);
@@ -198,7 +222,7 @@ function HomeWithModel() {
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[15, 20, 10]} />
 
-                {/* Piso verde */}
+                {/* Piso */}
                 <mesh rotation-x={-Math.PI / 2} position={[0, -2, 0]}>
                     <planeGeometry args={[2000, 2000]} />
                     <meshStandardMaterial color="#37F731" />
@@ -235,12 +259,13 @@ function HomeWithModel() {
 
                 <Compass />
             </Canvas>
-
         </div>
     );
 }
 
-// ================= APP PRINCIPAL =================
+// ==========================================================
+// 🔹 APP PRINCIPAL
+// ==========================================================
 function App() {
     return (
         <div
@@ -248,10 +273,9 @@ function App() {
             style={{
                 width: "100%",
                 height: "100%",
-                backgroundColor: "transparent", // azul cielo
+                backgroundColor: "transparent",
                 overflow: "hidden",
             }}
-
         >
             <Navbar />
             <Routes>
@@ -285,6 +309,5 @@ function App() {
         </div>
     );
 }
-
 
 export default App;
