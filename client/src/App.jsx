@@ -1,5 +1,5 @@
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import HomePage from "./pages/HomePage/HomePage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import SignupPage from "./pages/SignupPage/SignupPage";
@@ -36,7 +36,6 @@ function BuildingModel({
                        }) {
     const { scene } = useGLTF(path);
     const [hovered, setHovered] = useState(false);
-
     const isHighlighted = selectedBuilding?.id === id;
 
     // Rotación inicial
@@ -45,7 +44,7 @@ function BuildingModel({
         scene.rotation.set(rotation[0], rotation[1], rotation[2]);
     }, [scene, rotation]);
 
-    // Iluminación dinámica (hover + selección + Navbar)
+    // 🔹 Iluminación dinámica
     useEffect(() => {
         if (!scene) return;
         scene.traverse((child) => {
@@ -171,9 +170,8 @@ function AnimatedIcons({ building, visible }) {
 function HomeWithModel() {
     const [selectedBuilding, setSelectedBuilding] = useState(null);
     const [hoveredBuilding, setHoveredBuilding] = useState(null);
-    const { highlightedBuilding } = useContext(MapContext);
-
-    const sceneRef = useRef();
+    const { highlightedBuilding, trigger } = useContext(MapContext); // ← trigger nuevo
+    const mountedRef = useRef(false);
 
     const edificios = [
         { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-80, 0, 25], scale: [1.5, 1.5, 1.5], rotation: [0, Math.PI, 0] },
@@ -185,32 +183,37 @@ function HomeWithModel() {
         { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [250, 0, 5], scale: [3, 5, 4], rotation: [0, Math.PI, 0] },
     ];
 
-    const handleSelect = (building) => {
-        setSelectedBuilding((prev) =>
-            prev?.id === building?.id ? null : building
-        );
-    };
-
-    // Si viene una selección desde Navbar (highlightedBuilding)
     useEffect(() => {
+        mountedRef.current = true;
+        return () => {
+            mountedRef.current = false;
+            setSelectedBuilding(null);
+        };
+    }, []);
+
+    // ✅ Forzar reiluminación incluso si es el mismo edificio
+    useEffect(() => {
+        if (!mountedRef.current) return;
         if (highlightedBuilding) {
             const buildingData = edificios.find((b) => b.id === highlightedBuilding);
             if (buildingData) {
-                setSelectedBuilding({
-                    id: buildingData.id,
-                    position: buildingData.position,
-                    color: buildingData.color,
-                });
+                setSelectedBuilding(null);
+                setTimeout(() => {
+                    setSelectedBuilding({
+                        id: buildingData.id,
+                        position: buildingData.position,
+                        color: buildingData.color,
+                    });
+                }, 100);
             }
         } else {
             setSelectedBuilding(null);
         }
-    }, [highlightedBuilding]);
+    }, [highlightedBuilding, trigger]); // ← trigger añadido aquí
 
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
             <Canvas
-                ref={sceneRef}
                 camera={{ position: [0, 150, 300], fov: 50 }}
                 gl={{ alpha: true }}
                 style={{ background: "#b3e5ff" }}
@@ -234,12 +237,11 @@ function HomeWithModel() {
                         key={edificio.id}
                         {...edificio}
                         selectedBuilding={selectedBuilding}
-                        onSelect={handleSelect}
+                        onSelect={setSelectedBuilding}
                         onHover={setHoveredBuilding}
                     />
                 ))}
 
-                {/* Íconos animados */}
                 {(hoveredBuilding || selectedBuilding) && (
                     <AnimatedIcons
                         building={selectedBuilding || hoveredBuilding}
@@ -267,6 +269,8 @@ function HomeWithModel() {
 // 🔹 APP PRINCIPAL
 // ==========================================================
 function App() {
+    const location = useLocation();
+
     return (
         <div
             className="App"
@@ -278,7 +282,7 @@ function App() {
             }}
         >
             <Navbar />
-            <Routes>
+            <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<HomeWithModel />} />
                 <Route path="/menuDeCafeteria" element={<MenuDeCafeteria />} />
                 <Route

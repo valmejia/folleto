@@ -79,12 +79,15 @@ function Navbar() {
 
     const handleCarreraSelect = (carrera) => {
         if (carrera === "Ingeniería en Sistemas Computacionales") {
-            setHighlightedBuilding("A"); // 👈 activa el edificio A
+
+            setHighlightedBuilding(null);
+            setTimeout(() => setHighlightedBuilding("A"), 50);
         } else {
-            setHighlightedBuilding(null); // limpia cualquier selección
+            setHighlightedBuilding(null);
         }
         setAnchorCarrera(null);
     };
+
 
     const buttonStyle = {
         color: "#111",
