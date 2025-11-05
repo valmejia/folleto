@@ -123,87 +123,70 @@ function Navbar() {
         <AppBar
             position="sticky"
             sx={{
-                background: "rgba(255, 255, 255, 0.9)",
+                width: "90%",               // ancho menor para centrar
+                maxWidth: 1000,
+                mx: "auto",                 // centrado horizontal
+                mt: 2,                      // margen superior
+                borderRadius: 3,
+                background: "rgba(255, 255, 255, 0.2)",
                 backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
                 boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
             }}
         >
-            <Toolbar sx={{ display: "flex", alignItems: "center" }}>
-                {/* Logo */}
+            <Toolbar
+                sx={{
+                    minHeight: 50,          // navbar más pequeña
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    px: 2,                  // padding horizontal
+                }}
+            >
+                {/* Contenido de la Navbar */}
                 <Box
                     component="img"
                     src="/logo.png"
                     alt="Logo"
-                    sx={{ height: 42, mr: 3 }}
+                    sx={{ height: 32, mr: 2 }} // logo más pequeño
                 />
 
-                {/* 🌍 Mapa */}
-                <Button sx={buttonStyle} component={Link} to="/">
-                    <MapIcon sx={{ fontSize: 20 }} /> Mapa
-                </Button>
+                {/* Botones y menús */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Button sx={buttonStyle} component={Link} to="/">
+                        <MapIcon sx={{ fontSize: 18 }} /> Mapa
+                    </Button>
 
-                {/* 🎓 Carreras */}
-                <Box>
                     <Button sx={buttonStyle} onClick={handleClickCarrera}>
-                        <SchoolIcon sx={{ fontSize: 20 }} /> Carreras
+                        <SchoolIcon sx={{ fontSize: 18 }} /> Carreras
                     </Button>
-                    <Menu
-                        anchorEl={anchorCarrera}
-                        open={Boolean(anchorCarrera)}
-                        onClose={handleCloseCarrera}
-                        {...fullWidthMenuProps}
-                    >
-                        {carreras.map((c, i) => (
-                            <MenuItem key={i} onClick={handleCloseCarrera}>
-                                {c}
-                            </MenuItem>
-                        ))}
-                    </Menu>
-                </Box>
 
-                {/* 🧾 Trámites */}
-                <Box>
                     <Button sx={buttonStyle} onClick={handleClickTramites}>
-                        <AssignmentIcon sx={{ fontSize: 20 }} /> Trámites
+                        <AssignmentIcon sx={{ fontSize: 18 }} /> Trámites
                     </Button>
-                    <Menu
-                        anchorEl={anchorTramites}
-                        open={Boolean(anchorTramites)}
-                        onClose={handleCloseTramites}
-                        {...fullWidthMenuProps}
-                    >
-                        {tramites.map((t, i) => (
-                            <MenuItem key={i} onClick={handleCloseTramites}>
-                                {t}
-                            </MenuItem>
-                        ))}
-                    </Menu>
+
+                    <Button sx={buttonStyle} component={Link} to="/menuDeCafeteria">
+                        <LocalCafeIcon sx={{ fontSize: 18 }} /> Cafetería
+                    </Button>
                 </Box>
 
-                {/* ☕ Cafetería */}
-                <Button sx={buttonStyle} component={Link} to="/menuDeCafeteria">
-                    <LocalCafeIcon sx={{ fontSize: 20 }} /> Cafetería
-                </Button>
-
-                {/* 🔍 Barra de búsqueda */}
+                {/* Barra de búsqueda */}
                 <Search>
                     <SearchIconWrapper>
-                        <SearchIcon />
+                        <SearchIcon sx={{ fontSize: 18 }} />
                     </SearchIconWrapper>
-                    <StyledInputBase
-                        placeholder="Buscar…"
-                        inputProps={{ "aria-label": "search" }}
-                    />
+                    <StyledInputBase placeholder="Buscar…" inputProps={{ "aria-label": "search" }} />
                 </Search>
 
-                {/* 🚪 Cerrar sesión */}
+                {/* Cerrar sesión */}
                 {isLoggedIn && (
-                    <Button onClick={logOutUser} sx={{ ml: 2, ...buttonStyle }}>
-                        <LogoutIcon sx={{ fontSize: 20 }} /> Cerrar sesión
+                    <Button onClick={logOutUser} sx={{ ml: 1, ...buttonStyle }}>
+                        <LogoutIcon sx={{ fontSize: 18 }} /> Cerrar sesión
                     </Button>
                 )}
             </Toolbar>
         </AppBar>
+
     );
 }
 
