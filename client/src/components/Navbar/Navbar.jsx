@@ -84,7 +84,20 @@ function Navbar() {
         } else if (carrera === "Gastronomía") {
             clearHighlights(); // limpia cualquier highlight anterior
             setTimeout(() => highlightBuildings(["C", "B", "D", "E"]), 50);
-        } else  {
+        }else if (carrera === "Ingeniería en TIC'S") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings(["E"]), 50);
+        } else if (carrera === "Ingeniería en Sistemas Automotrices") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings(["D", "E"]), 50);
+        } else if (carrera === "Ingeniería en Administración") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings(["D", "I"]), 50);
+        } else if (carrera === "Contaduría Pública") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings([ "D"]), 50);
+        }
+        else  {
             clearHighlights(); // apaga si no es esa carrera
         }
         setAnchorCarrera(null);
