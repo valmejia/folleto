@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import Navbar from "./components/Navbar/Navbar";
 import IsPrivate from "./components/IsPrivate/IsPrivate";
 import IsAnon from "./components/IsAnon/IsAnon";
+import React from "react";
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Html } from "@react-three/drei";
@@ -179,6 +180,12 @@ function AnimatedIcons({ building, visible }) {
     );
 }
 
+function Piso() {
+
+    const { scene } = useGLTF("/models/caminoTESO.glb");
+
+    return <primitive object={scene} scale={50} position={[25, 0, 0]} rotation={[ 0, (300 * Math.PI) / 180, 0]} />;
+}
 
 
 // ==========================================================
@@ -191,14 +198,14 @@ function HomeWithModel() {
     const mountedRef = useRef(false);
 
     const edificios = [
-        { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-80, 0, 25], scale: [1.5, 1.5, 1.5], rotation: [0, Math.PI, 0] },
-        { id: "B", path: "/models/EDIFICIOB.glb", color: "blue", position: [-80, 0, -100], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "C", path: "/models/EDIFICIOC.glb", color: "green", position: [-150, 0, -180], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-150, 0, -280], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [80, 0, 25], scale: [2, 3.5, 3], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-250, 0, -280], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [250, 0, 5], scale: [3, 5, 4], rotation: [0, Math.PI, 0] },
-        { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [100, 0, -150], scale: [3, 3, 3], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-40, 0, 155], scale: [1.5, 1.5, 1.5], rotation: [0, Math.PI, 0] },
+        { id: "B", path: "/models/EDIFICIOB.glb", color: "blue", position: [-40, 0, 40], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
+        { id: "C", path: "/models/EDIFICIOC.glb", color: "green", position: [-150, 0, -80], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
+        { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-150, 0, -210], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
+        { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [100, 0, 180], scale: [2, 3.5, 3], rotation: [0, (95 * Math.PI) / 180, 0] },
+        { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-290, 0, -255], scale: [2, 3.5, 3], rotation: [0, (264 * Math.PI) / 180, 0] },
+        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [250, 0, 120], scale: [3, 5, 4], rotation: [0, (190 * Math.PI) / 180, 0] },
+        { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [120, 0, 10], scale: [3, 3, 3], rotation: [0, (90 * Math.PI) / 180, 0] },
     ];
 
     useEffect(() => {
@@ -233,7 +240,6 @@ function HomeWithModel() {
     }, [highlightedBuildings, trigger]);
 
 
-
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
             <Canvas
@@ -248,7 +254,10 @@ function HomeWithModel() {
                 <ambientLight intensity={0.6} />
                 <directionalLight position={[15, 20, 10]} />
 
-                {/* Piso */}
+                {/*  <Piso /> */}
+
+
+                {/* Piso*/}
                 <mesh rotation-x={-Math.PI / 2} position={[0, -2, 0]}>
                     <planeGeometry args={[2000, 2000]} />
                     <meshStandardMaterial color="#37F731" />
