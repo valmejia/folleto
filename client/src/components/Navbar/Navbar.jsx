@@ -26,9 +26,6 @@ import SolarPowerIcon from '@mui/icons-material/SolarPower';
 import BusinessIcon from '@mui/icons-material/Business';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
-import GroupIcon from '@mui/icons-material/Group';            // Servicio Social
-import CreditScoreIcon from '@mui/icons-material/CreditScore';// Créditos Complementarios
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';// Residencia Profesional
 
 
 const Search = styled("div")(({ theme }) => ({
@@ -72,7 +69,6 @@ const SearchIconWrapper = styled("div")(() => ({
 
 function Navbar() {
     const [anchorCarrera, setAnchorCarrera] = useState(null);
-    const [anchorTramites, setAnchorTramites] = useState(null);
     const { isLoggedIn, logOutUser } = useContext(AuthContext);
     const { highlightBuildings, clearHighlights } = useContext(MapContext);
 
@@ -98,26 +94,8 @@ function Navbar() {
         "Ingeniería en TIC'S": <DeviceHubIcon sx={{ mr: 1, fontSize: 18 }} />,
     };
 
-    const tramites = [
-        "Servicio Social",
-        "Inglés",
-        "Créditos Complementarios",
-        "Residencia Profesional",
-    ];
-
-    const tramiteIcons = {
-        "Servicio Social": <GroupIcon sx={{ fontSize: 18 }} />,
-        "Inglés": <SchoolIcon sx={{ fontSize: 18 }} />,
-        "Créditos Complementarios": <CreditScoreIcon sx={{ fontSize: 18 }} />,
-        "Residencia Profesional": <WorkOutlineIcon sx={{ fontSize: 18 }} />,
-    };
-
-
     const handleClickCarrera = (event) => setAnchorCarrera(event.currentTarget);
     const handleCloseCarrera = () => setAnchorCarrera(null);
-
-    const handleClickTramites = (event) => setAnchorTramites(event.currentTarget);
-    const handleCloseTramites = () => setAnchorTramites(null);
 
     const handleCarreraSelect = (carrera) => {
         if (carrera === "Ingeniería en Sistemas Computacionales") {
@@ -216,31 +194,14 @@ function Navbar() {
                         ))}
                     </Menu>
 
-                    <Button sx={buttonStyle} onClick={handleClickTramites}>
+                    {/* Botón directo a la página de trámites */}
+                    <Button
+                        sx={buttonStyle}
+                        component={Link}
+                        to="/tramites"
+                    >
                         <AssignmentIcon sx={{ fontSize: 18 }} /> Trámites
                     </Button>
-                    <Menu
-                        anchorEl={anchorTramites}
-                        open={Boolean(anchorTramites)}
-                        onClose={handleCloseTramites}
-                        PaperProps={{
-                            sx: {
-                                mt: 1,
-                                borderRadius: 2,
-                                boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-                            },
-                        }}
-                    >
-                        {tramites.map((tramite) => (
-                            <MenuItem key={tramite} onClick={handleCloseTramites}>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    {tramiteIcons[tramite]}
-                                    {tramite}
-                                </Box>
-                            </MenuItem>
-                        ))}
-
-                    </Menu>
 
                     <Button sx={buttonStyle} component={Link} to="/menuDeCafeteria">
                         <LocalCafeIcon sx={{ fontSize: 18 }} /> Cafetería
