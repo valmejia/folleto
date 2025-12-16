@@ -106,6 +106,35 @@ function HtmlCompass() {
 }
 
 // ==========================================================
+// 🔹 COMPONENTE DE VEGETACIÓN - SIN ILUMINACIÓN ESPECIAL
+// ==========================================================
+function VegetationModel({
+                             id,
+                             path,
+                             position,
+                             scale,
+                             rotation = [0, 0, 0],
+                         }) {
+    const { scene } = useGLTF(path);
+
+    // Rotación inicial
+    useEffect(() => {
+        if (!scene) return;
+        scene.rotation.set(rotation[0], rotation[1], rotation[2]);
+    }, [scene, rotation]);
+
+    if (!scene) return null;
+
+    return (
+        <primitive
+            object={scene}
+            scale={scale}
+            position={position}
+        />
+    );
+}
+
+// ==========================================================
 // 🔹 COMPONENTE DE EDIFICIO - SOLO ILUMINACIÓN AL CLICK
 // ==========================================================
 function BuildingModel({
@@ -645,6 +674,61 @@ function MinecraftControls() {
 }
 
 // ==========================================================
+// 🔹 COMPONENTE DE VEGETACIÓN - RENDERIZA TODOS LOS ÁRBOLES/ARBUSTOS
+// ==========================================================
+function Vegetation() {
+    // Definición de todos los modelos de vegetación
+    const vegetationModels = [
+        // Piños
+        { id: "pino", path: "/models/pinos.glb", position: [50, 0, 270], scale: [2, 2, 2], rotation: [0, 0, 0] },
+        // Arbustos E2
+        { id: "arbustoE2", path: "/models/arbustoE2.glb", position: [140, 0, 475], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        // Arbustos E1
+        { id: "arbustoE1", path: "/models/arbustoE1.glb", position: [146, 0, 384], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Arbusto edificio B
+        { id: "arbustoB1", path: "/models/arbustoB1.glb", position: [-210, 0, 55], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoB2", path: "/models/arbustoB2.glb", position: [-210, 0, 142], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Arbusto edificio gastro
+        { id: "arbustoC1", path: "/models/arbustoC1.glb", position: [-424, 0, -339], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoC2", path: "/models/arbustoC2.glb", position: [-424, 0, -251], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Arbusto edificio gastro
+        { id: "arbustoD1", path: "/models/arbustoD1.glb", position: [-424, 0, -815], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoD2", path: "/models/arbustoD2.glb", position: [-424, 0, -670], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Árboles A2
+        { id: "arbolesA2", path: "/models/ArbolesA2.glb", position: [0, 0, 0], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+
+        // Árboles A1
+        { id: "arbolesA1", path: "/models/ArbolesA1.glb", position: [-95, 0, 570], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+
+        // 3 árboles altos
+        { id: "3arbolesaltos", path: "/models/3arbolesaltos.glb", position: [-80, 0, 375], scale: [2.5, 2.5, 2.5], rotation: [0, (180 * Math.PI) / 180, 0] },
+
+        // 3 árboles normales
+        { id: "3arboles", path: "/models/3arboles.glb", position: [300, 0, -300], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+
+    ];
+
+    return (
+        <>
+            {vegetationModels.map((model) => (
+                <VegetationModel
+                    key={model.id}
+                    id={model.id}
+                    path={model.path}
+                    position={model.position}
+                    scale={model.scale}
+                    rotation={model.rotation}
+                />
+            ))}
+        </>
+    );
+}
+
+// ==========================================================
 // 🔹 HOME CON MODELO - SISTEMA DE SELECCIÓN COMBINADO
 // ==========================================================
 function HomeWithModel() {
@@ -662,10 +746,10 @@ function HomeWithModel() {
         { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-608, 0, -837], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
         { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [330, 0, 500], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
         { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-987, 0, -839], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "F", path: "/models/EDIFICIOF.glb", color: "red", position: [500, 0, 425], scale: [30, 40, 40], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [1050, 0, 460], scale: [10, 18, 11], rotation: [0, (180 * Math.PI) / 180, 0] },
+        { id: "F", path: "/models/EDIFICIOF.glb", color: "red", position: [585, 0, 380], scale: [31, 40, 40], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [821, 0, 350], scale: [8.5, 18, 13.8], rotation: [0, (180 * Math.PI) / 180, 0] },
         { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [231, 0, 15], scale: [7, 7, 6], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "AUDITORIO", path: "/models/auditorio.glb", color: "blue", position: [0, 0, 0], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "AUDITORIO", path: "/models/auditorio.glb", color: "blue", position: [871, 0, -50], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
     ];
 
     useEffect(() => {
@@ -1127,6 +1211,9 @@ function HomeWithModel() {
                     />
                 ))}
 
+                {/* Vegetación - agregada como componente separado */}
+                <Vegetation />
+
                 {/* Íconos animados para todos los edificios seleccionados */}
                 {allSelectedBuildings.length > 0 && (
                     <AnimatedIcons
@@ -1141,6 +1228,7 @@ function HomeWithModel() {
         </div>
     );
 }
+
 // ==========================================================
 // 🔹 APP PRINCIPAL
 // ==========================================================
