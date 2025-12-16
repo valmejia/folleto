@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Container,
     Typography,
@@ -19,6 +18,13 @@ import {
     createTheme,
     ThemeProvider,
     Chip,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Divider,
+    Fade,
+    ClickAwayListener
 } from '@mui/material';
 import {
     School,
@@ -38,12 +44,6 @@ import {
     PlayArrow,
     Download,
     Visibility,
-    Group,
-    Work,
-    Security,
-    Badge,
-    AssignmentTurnedIn,
-    LocalHospital,
     Handshake,
     Work as Briefcase,
     Security as ShieldCheck,
@@ -98,13 +98,14 @@ const greenTheme = createTheme({
     },
 });
 
-// Datos de los trámites COMPLETOS - Sin importancia y disponibilidad
+// Datos de los trámites COMPLETOS - Con categorías
 const tramitesData = [
     {
         id: 1,
         titulo: 'Inscripción',
         descripcion: 'Proceso que regula el ingreso de alumnos para continuar con su proceso educativo a nivel superior',
         icono: <School />,
+        categoria: 'admision',
         pasos: [
             {
                 titulo: 'Verificación de costos',
@@ -229,6 +230,7 @@ const tramitesData = [
         titulo: 'Reinscripción Estudiantes Regulares 2025-2',
         descripcion: 'Proceso de reinscripción para estudiantes regulares del TESOEM que continuarán sus estudios durante el semestre enero-septiembre 2025.',
         icono: <School />,
+        categoria: 'admision',
         pasos: [
             {
                 titulo: 'Generar Formato Universal de Pago (FUP)',
@@ -284,6 +286,7 @@ const tramitesData = [
         titulo: 'Reinscripción Estudiantes Irregulares 2025-2',
         descripcion: 'Trámite de reinscripción dirigido a estudiantes irregulares del TESOEM que presenten materias pendientes o recursamientos.',
         icono: <School />,
+        categoria: 'admision',
         pasos: [
             {
                 titulo: 'Generar Formato Universal de Pago (FUP)',
@@ -339,6 +342,7 @@ const tramitesData = [
         titulo: 'Reinscripción por Traslado, Convalidación o Equivalencia 2025-2',
         descripcion: 'Trámite para estudiantes que ingresan al TESOEM mediante traslado, convalidación o equivalencia de estudios.',
         icono: <School />,
+        categoria: 'admision',
         pasos: [
             {
                 titulo: 'Generar Formato Universal de Pago (FUP)',
@@ -451,6 +455,7 @@ const tramitesData = [
         titulo: 'Servicio Social',
         descripcion: 'Actividad obligatoria en la que el estudiante aplica los conocimientos adquiridos en su formación profesional, con una duración mínima de 6 meses y máxima de 2 años, cubriendo 480 horas.',
         icono: <Handshake />,
+        categoria: 'servicio_residencia',
         pasos: [
             {
                 titulo: 'Verificar elegibilidad',
@@ -573,6 +578,7 @@ const tramitesData = [
         titulo: 'Residencia Profesional',
         descripcion: 'Asignatura del noveno semestre donde el estudiante desarrolla un proyecto profesional aplicando los conocimientos adquiridos en su carrera. Duración: 500 horas en un periodo de 4 a 6 meses.',
         icono: <Briefcase />,
+        categoria: 'servicio_residencia',
         pasos: [
             {
                 titulo: 'Verificar elegibilidad',
@@ -681,6 +687,7 @@ const tramitesData = [
         titulo: 'Seguro Estudiantil TESOEM',
         descripcion: 'El seguro estudiantil del TESOEM integra el Seguro Facultativo del IMSS y el Seguro contra Accidentes Escolares, garantizando atención médica y protección durante tu estancia académica.',
         icono: <ShieldCheck />,
+        categoria: 'imss',
         pasos: [
             {
                 titulo: 'Afiliación al Seguro Facultativo del IMSS',
@@ -756,6 +763,7 @@ const tramitesData = [
         titulo: 'Asignación o Consulta del Número de Seguridad Social (NSS)',
         descripcion: 'Trámite en línea para obtener o localizar tu Número de Seguridad Social (NSS), requerido para el Seguro Facultativo del IMSS.',
         icono: <IdCard />,
+        categoria: 'imss',
         pasos: [
             {
                 titulo: 'Ingresar al portal del IMSS',
@@ -801,6 +809,7 @@ const tramitesData = [
         titulo: 'Constancia de Vigencia de Derechos IMSS',
         descripcion: 'Documento que acredita que un estudiante o derechohabiente cuenta con servicio médico activo en el IMSS.',
         icono: <ClipboardCheck />,
+        categoria: 'imss',
         pasos: [
             {
                 titulo: 'Acceder al portal del IMSS',
@@ -852,6 +861,7 @@ const tramitesData = [
         titulo: 'Seguro contra Accidentes Escolares TECNM',
         descripcion: 'Cobertura médica gratuita para estudiantes del TESOEM durante actividades académicas y traslados directos relacionados.',
         icono: <Activity />,
+        categoria: 'imss',
         pasos: [
             {
                 titulo: 'Vigencia y activación',
@@ -893,6 +903,7 @@ const tramitesData = [
         titulo: 'Certificado de Estudios',
         descripcion: 'Documento oficial que avala cada una de las materias cursadas y los resultados obtenidos. Puede solicitarse como certificado total al finalizar la carrera o como certificado parcial si el alumno tramita su baja definitiva o cuenta con autorización institucional.',
         icono: <School />,
+        categoria: 'academico',
         pasos: [
             {
                 titulo: 'Verificación de costos',
@@ -954,6 +965,7 @@ const tramitesData = [
         titulo: 'Historial Académico',
         descripcion: 'Documento oficial que presenta de forma ordenada las calificaciones de las materias cursadas por el alumno hasta el momento de la solicitud. Incluye promedio general y datos escolares del estudiante.',
         icono: <School />,
+        categoria: 'academico',
         pasos: [
             {
                 titulo: 'Verificación de costos',
@@ -1009,6 +1021,7 @@ const tramitesData = [
         titulo: 'Constancia de Estudios',
         descripcion: 'Documento oficial que acredita la situación académica de un estudiante en un periodo determinado, confirmando si está inscrito o ha finalizado sus estudios en el TESOEM.',
         icono: <School />,
+        categoria: 'academico',
         pasos: [
             {
                 titulo: 'Verificación de costos',
@@ -1070,6 +1083,7 @@ const tramitesData = [
         titulo: 'Credencialización',
         descripcion: 'Trámite para la expedición o reposición de la credencial oficial que acredita la identidad de los integrantes de la comunidad del TESOEM: estudiantes, personal administrativo, docente y de estructura.',
         icono: <School />,
+        categoria: 'academico',
         pasos: [
             {
                 titulo: 'Verificación de costos',
@@ -1126,16 +1140,237 @@ const tramitesData = [
         email: 'control.escolar@tesoem.edu.mx',
         horario: 'Lunes a Viernes: 9:00 a 15:00 hrs y 16:00 a 18:00 hrs'
     }
-];;
+];
 
-// Categorías para filtrar
+// Categorías para filtrar - ACTUALIZADAS
 const categorias = [
     { id: 'todos', label: 'Todos', icon: <ListIcon />, color: 'primary' },
     { id: 'admision', label: 'Admisión', icon: <School />, color: 'primary' },
     { id: 'academico', label: 'Académico', icon: <Assignment />, color: 'primary' },
-    { id: 'financiero', label: 'Financiero', icon: <Payment />, color: 'primary' },
-    { id: 'titulacion', label: 'Titulación', icon: <ExitToApp />, color: 'primary' }
+    { id: 'imss', label: 'Seguro IMSS', icon: <ShieldCheck />, color: 'primary' },
+    { id: 'servicio_residencia', label: 'Servicio Social y Residencia', icon: <Handshake />, color: 'primary' }
 ];
+
+// Componente de Barra de Búsqueda Mejorada
+function ModernSearchBar({ onSearchChange, onSearchSelect }) {
+    const theme = useTheme();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const searchRef = useRef(null);
+
+    // Función para buscar trámites
+    const buscarTramites = (termino) => {
+        if (!termino.trim()) return [];
+
+        const terminoLower = termino.toLowerCase().trim();
+
+        return tramitesData.filter(tramite => {
+            const campos = [
+                tramite.titulo,
+                tramite.descripcion,
+                tramite.departamento,
+                tramite.ubicacion,
+                tramite.contacto,
+                ...tramite.documentos.map(doc => doc.nombre),
+                ...tramite.pasos.map(paso => paso.titulo + ' ' + paso.descripcion)
+            ];
+
+            return campos.some(campo =>
+                campo && campo.toString().toLowerCase().includes(terminoLower)
+            );
+        }).slice(0, 5);
+    };
+
+    // Manejar cambios en la búsqueda
+    const handleSearchChange = (event) => {
+        const value = event.target.value;
+        setSearchTerm(value);
+
+        if (value.trim().length > 0) {
+            const results = buscarTramites(value);
+            setSuggestions(results);
+            setShowSuggestions(true);
+        } else {
+            setSuggestions([]);
+            setShowSuggestions(false);
+        }
+
+        if (onSearchChange) {
+            onSearchChange(value);
+        }
+    };
+
+    // Manejar selección de sugerencia
+    const handleSuggestionClick = (tramite) => {
+        setSearchTerm(tramite.titulo);
+        setShowSuggestions(false);
+        if (onSearchSelect) {
+            onSearchSelect(tramite);
+        }
+    };
+
+    // Cerrar sugerencias al hacer clic fuera
+    const handleClickAway = () => {
+        setShowSuggestions(false);
+    };
+
+    // Manejar tecla Enter
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' && searchTerm.trim() && suggestions.length > 0) {
+            handleSuggestionClick(suggestions[0]);
+        }
+    };
+
+    // Limpiar búsqueda
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        setSuggestions([]);
+        setShowSuggestions(false);
+        if (onSearchChange) {
+            onSearchChange('');
+        }
+    };
+
+    return (
+        <ClickAwayListener onClickAway={handleClickAway}>
+            <Box sx={{ mb: 4, position: 'relative' }}>
+                <Paper
+                    ref={searchRef}
+                    sx={{
+                        p: 1.5,
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRadius: 2,
+                        background: '#ffffff',
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                        transition: 'all 0.3s ease',
+                        '&:focus-within': {
+                            borderColor: alpha(theme.palette.primary.main, 0.3),
+                            boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.1)}`
+                        }
+                    }}
+                >
+                    <Search sx={{ mx: 2, color: 'text.secondary', fontSize: 24 }} />
+                    <input
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Buscar trámites por nombre, departamento, ubicación..."
+                        style={{
+                            border: 'none',
+                            outline: 'none',
+                            width: '100%',
+                            padding: '12px 8px',
+                            background: 'transparent',
+                            fontSize: '16px',
+                            fontWeight: '500'
+                        }}
+                    />
+                    {searchTerm && (
+                        <IconButton
+                            onClick={handleClearSearch}
+                            size="small"
+                            sx={{ mr: 1 }}
+                        >
+                            <Close fontSize="small" />
+                        </IconButton>
+                    )}
+                </Paper>
+
+                {/* Sugerencias de búsqueda */}
+                <Fade in={showSuggestions && suggestions.length > 0}>
+                    <Paper
+                        sx={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            mt: 1,
+                            zIndex: 9999,
+                            borderRadius: 2,
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                            background: '#ffffff'
+                        }}
+                    >
+                        <List sx={{ py: 1 }}>
+                            <ListItem sx={{ py: 1.5, px: 3 }}>
+                                <ListItemText
+                                    primary="Resultados de búsqueda"
+                                    primaryTypographyProps={{
+                                        fontWeight: 600,
+                                        color: 'primary.main'
+                                    }}
+                                />
+                            </ListItem>
+                            <Divider />
+
+                            {suggestions.map((tramite, index) => (
+                                <React.Fragment key={tramite.id}>
+                                    <ListItem
+                                        button
+                                        onClick={() => handleSuggestionClick(tramite)}
+                                        sx={{
+                                            py: 2,
+                                            px: 3,
+                                            '&:hover': {
+                                                backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                                            }
+                                        }}
+                                    >
+                                        <ListItemIcon sx={{ minWidth: 40 }}>
+                                            {React.cloneElement(tramite.icono, {
+                                                sx: {
+                                                    color: theme.palette.primary.main,
+                                                    fontSize: 20
+                                                }
+                                            })}
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={tramite.titulo}
+                                            secondary={
+                                                <Box component="span" sx={{ display: 'flex', flexDirection: 'column', mt: 0.5 }}>
+                                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                                                        {tramite.descripcion.substring(0, 60)}...
+                                                    </Typography>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+                                                        <LocationOn sx={{ fontSize: 12, mr: 0.5, color: 'text.secondary' }} />
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {tramite.ubicacion}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            }
+                                            primaryTypographyProps={{
+                                                fontWeight: 600,
+                                                fontSize: '0.9rem'
+                                            }}
+                                        />
+                                    </ListItem>
+                                    {index < suggestions.length - 1 && <Divider />}
+                                </React.Fragment>
+                            ))}
+
+                            <ListItem sx={{ py: 1.5, px: 3, backgroundColor: alpha(theme.palette.primary.main, 0.04) }}>
+                                <ListItemText
+                                    primary={`${suggestions.length} resultado${suggestions.length !== 1 ? 's' : ''} encontrado${suggestions.length !== 1 ? 's' : ''}`}
+                                    primaryTypographyProps={{
+                                        fontSize: '0.8rem',
+                                        color: 'text.secondary',
+                                        textAlign: 'center'
+                                    }}
+                                />
+                            </ListItem>
+                        </List>
+                    </Paper>
+                </Fade>
+            </Box>
+        </ClickAwayListener>
+    );
+}
 
 function CategoryFilter({ categoriaActiva, onCategoriaChange }) {
     const theme = useTheme();
@@ -1355,61 +1590,6 @@ function ModernTramiteCard({ tramite, onVerDetalles }) {
                 </Button>
             </CardActions>
         </Card>
-    );
-}
-
-function ModernSearchBar() {
-    const theme = useTheme();
-
-    return (
-        <Box sx={{ mb: 4 }}>
-            <Paper
-                sx={{
-                    p: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderRadius: 2,
-                    background: '#ffffff',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                    transition: 'all 0.3s ease',
-                    '&:focus-within': {
-                        borderColor: alpha(theme.palette.primary.main, 0.3),
-                        boxShadow: `0 2px 12px ${alpha(theme.palette.primary.main, 0.1)}`
-                    }
-                }}
-            >
-                <Search sx={{ mx: 2, color: 'text.secondary', fontSize: 24 }} />
-                <input
-                    placeholder="Buscar trámites por nombre, departamento..."
-                    style={{
-                        border: 'none',
-                        outline: 'none',
-                        width: '100%',
-                        padding: '12px 8px',
-                        background: 'transparent',
-                        fontSize: '16px',
-                        fontWeight: '500'
-                    }}
-                />
-                <Button
-                    variant="outlined"
-                    startIcon={<FilterList />}
-                    sx={{
-                        borderRadius: 2,
-                        px: 3,
-                        fontWeight: 600,
-                        border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        '&:hover': {
-                            border: `2px solid ${theme.palette.primary.main}`,
-                            background: alpha(theme.palette.primary.main, 0.04)
-                        }
-                    }}
-                >
-                    Filtros
-                </Button>
-            </Paper>
-        </Box>
     );
 }
 
@@ -1661,348 +1841,348 @@ function ModernDetallesTramite({ tramite, onCerrar }) {
                                 gutterBottom
                                 fontWeight="700"
                                 sx={{
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                    backgroundClip: 'text',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent'
-                                }}
-                            >
-                                {tramite.titulo}
-                            </Typography>
-                            <Typography
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent'
+                            }}
+                                >
+                            {tramite.titulo}
+                                </Typography>
+                                <Typography
                                 variant="h6"
                                 color="text.secondary"
                                 sx={{ lineHeight: 1.6, maxWidth: 600 }}
-                            >
-                                {tramite.descripcion}
-                            </Typography>
-                        </Box>
+                        >
+                            {tramite.descripcion}
+                        </Typography>
                     </Box>
-
-                    <IconButton
-                        onClick={onCerrar}
-                        sx={{
-                            border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                            background: 'white',
-                            '&:hover': {
-                                background: alpha(theme.palette.primary.main, 0.1),
-                            }
-                        }}
-                    >
-                        <Close />
-                    </IconButton>
                 </Box>
-            </Paper>
 
-            <Grid container spacing={4}>
-                {/* Columna izquierda - Proceso del Trámite */}
-                <Grid item xs={12} lg={6}>
-                    <Paper
-                        sx={{
-                            p: 4,
-                            borderRadius: 2,
-                            background: '#ffffff',
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                            height: 'fit-content'
-                        }}
-                    >
-                        <Typography
-                            variant="h4"
-                            gutterBottom
-                            fontWeight="700"
-                            sx={{
-                                mb: 4,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 2,
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                    color: 'white',
-                                    mr: 2
-                                }}
-                            >
-                                <PlayArrow sx={{ fontSize: 28 }} />
-                            </Box>
-                            Proceso del Trámite
-                        </Typography>
+                <IconButton
+                    onClick={onCerrar}
+                    sx={{
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        background: 'white',
+                        '&:hover': {
+                            background: alpha(theme.palette.primary.main, 0.1),
+                        }
+                    }}
+                >
+                    <Close />
+                </IconButton>
+            </Box>
+        </Paper>
 
-                        <Box sx={{ position: 'relative' }}>
-                            {/* Línea vertical conectadora */}
-                            <Box
-                                sx={{
-                                    position: 'absolute',
-                                    left: 25,
-                                    top: 0,
-                                    bottom: 0,
-                                    width: 2,
-                                    background: `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.3)} 100%)`,
-                                    zIndex: 1
-                                }}
-                            />
-
-                            {tramite.pasos.map((paso, index) => (
-                                <ModernProcessStep
-                                    key={index}
-                                    step={paso}
-                                    index={index}
-                                    totalSteps={tramite.pasos.length}
-                                />
-                            ))}
-                        </Box>
-                    </Paper>
-                </Grid>
-
-                {/* Columna derecha - Documentación */}
-                <Grid item xs={12} lg={6}>
-                    <Paper
-                        sx={{
-                            p: 4,
-                            borderRadius: 2,
-                            mb: 4,
-                            background: '#ffffff',
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-                        }}
-                    >
-                        <Typography
-                            variant="h4"
-                            gutterBottom
-                            fontWeight="700"
-                            sx={{
-                                mb: 4,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 2,
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                    color: 'white',
-                                    mr: 2
-                                }}
-                            >
-                                <Description sx={{ fontSize: 28 }} />
-                            </Box>
-                            Documentación Requerida
-                        </Typography>
-
-                        <Box sx={{ maxHeight: 600, overflow: 'auto', pr: 1 }}>
-                            {tramite.documentos.map((documento, index) => (
-                                <ModernDocumentItem
-                                    key={index}
-                                    document={documento}
-                                    index={index}
-                                />
-                            ))}
-                        </Box>
-
-                        {/* Resumen de documentación */}
-                        <Box
-                            sx={{
-                                mt: 3,
-                                p: 3,
-                                borderRadius: 2,
-                                background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-                                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-                            }}
-                        >
-                            <Typography variant="h6" fontWeight="600" gutterBottom color="primary.main">
-                                📋 Resumen de Documentación
-                            </Typography>
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2" fontWeight="600">
-                                        Total de documentos:
-                                    </Typography>
-                                    <Typography variant="body1" color="primary.main" fontWeight="700">
-                                        {tramite.documentos.length}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body2" fontWeight="600">
-                                        Documentos originales:
-                                    </Typography>
-                                    <Typography variant="body1" color="primary.main" fontWeight="700">
-                                        {tramite.documentos.filter(doc => doc.original).length}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-                        </Box>
-                    </Paper>
-
-                    {/* Información de Contacto */}
-                    <Paper
-                        sx={{
-                            p: 4,
-                            borderRadius: 2,
-                            background: '#ffffff',
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-                        }}
-                    >
-                        <Typography
-                            variant="h4"
-                            gutterBottom
-                            fontWeight="700"
-                            sx={{
-                                mb: 4,
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: 2,
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                    color: 'white',
-                                    mr: 2
-                                }}
-                            >
-                                <LocationOn sx={{ fontSize: 28 }} />
-                            </Box>
-                            Información de Contacto
-                        </Typography>
-
-                        <Grid container spacing={3}>
-                            {[
-                                { icon: <LocationOn />, label: 'Ubicación', value: tramite.ubicacion, color: 'primary' },
-                                { icon: <Phone />, label: 'Teléfono', value: tramite.telefono, color: 'primary' },
-                                { icon: <Email />, label: 'Email', value: tramite.email, color: 'primary' },
-                                { icon: <AccessTime />, label: 'Horario', value: tramite.horario, color: 'primary' }
-                            ].map((item, index) => (
-                                <Grid item xs={12} sm={6} key={index}>
-                                    <Box
-                                        sx={{
-                                            p: 2,
-                                            borderRadius: 2,
-                                            background: alpha(theme.palette[item.color].main, 0.05),
-                                            border: `1px solid ${alpha(theme.palette[item.color].main, 0.1)}`,
-                                            transition: 'all 0.3s ease',
-                                            '&:hover': {
-                                                borderColor: alpha(theme.palette[item.color].main, 0.3),
-                                                transform: 'translateY(-2px)'
-                                            }
-                                        }}
-                                    >
-                                        <Box display="flex" alignItems="center" mb={1}>
-                                            <Box
-                                                sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: 32,
-                                                    height: 32,
-                                                    borderRadius: 2,
-                                                    background: `linear-gradient(135deg, ${theme.palette[item.color].main} 0%, ${theme.palette[item.color].dark} 100%)`,
-                                                    color: 'white',
-                                                    mr: 1.5
-                                                }}
-                                            >
-                                                {item.icon}
-                                            </Box>
-                                            <Typography variant="body2" fontWeight="600" color="text.primary">
-                                                {item.label}
-                                            </Typography>
-                                        </Box>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {item.value}
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            ))}
-                        </Grid>
-
-                        {tramite.contacto && (
-                            <Box
-                                sx={{
-                                    mt: 3,
-                                    p: 3,
-                                    borderRadius: 2,
-                                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                                    color: 'white'
-                                }}
-                            >
-                                <Typography variant="h6" fontWeight="600" gutterBottom>
-                                    👤 Persona Responsable
-                                </Typography>
-                                <Typography variant="body1">
-                                    {tramite.contacto}
-                                </Typography>
-                            </Box>
-                        )}
-                    </Paper>
-                </Grid>
-            </Grid>
-
-            <Box
+    <Grid container spacing={4}>
+        {/* Columna izquierda - Proceso del Trámite */}
+        <Grid item xs={12} lg={6}>
+            <Paper
                 sx={{
-                    mt: 4,
                     p: 4,
                     borderRadius: 2,
                     background: '#ffffff',
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                    display: 'flex',
-                    gap: 2,
-                    justifyContent: 'center',
-                    flexWrap: 'wrap'
+                    height: 'fit-content'
                 }}
             >
-                <Button
-                    variant="outlined"
-                    startIcon={<Close />}
-                    onClick={onCerrar}
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    fontWeight="700"
                     sx={{
-                        borderRadius: 2,
-                        px: 4,
-                        py: 1.5,
-                        fontWeight: 600,
-                        border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                        '&:hover': {
-                            border: `2px solid ${theme.palette.primary.main}`,
-                            background: alpha(theme.palette.primary.main, 0.04)
-                        }
+                        mb: 4,
+                        display: 'flex',
+                        alignItems: 'center'
                     }}
                 >
-                    Volver a la Lista
-                </Button>
-                <Button
-                    variant="contained"
-                    startIcon={<LocationOn />}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 48,
+                            height: 48,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            color: 'white',
+                            mr: 2
+                        }}
+                    >
+                        <PlayArrow sx={{ fontSize: 28 }} />
+                    </Box>
+                    Proceso del Trámite
+                </Typography>
+
+                <Box sx={{ position: 'relative' }}>
+                    {/* Línea vertical conectadora */}
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            left: 25,
+                            top: 0,
+                            bottom: 0,
+                            width: 2,
+                            background: `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.3)} 100%)`,
+                            zIndex: 1
+                        }}
+                    />
+
+                    {tramite.pasos.map((paso, index) => (
+                        <ModernProcessStep
+                            key={index}
+                            step={paso}
+                            index={index}
+                            totalSteps={tramite.pasos.length}
+                        />
+                    ))}
+                </Box>
+            </Paper>
+        </Grid>
+
+        {/* Columna derecha - Documentación */}
+        <Grid item xs={12} lg={6}>
+            <Paper
+                sx={{
+                    p: 4,
+                    borderRadius: 2,
+                    mb: 4,
+                    background: '#ffffff',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                }}
+            >
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    fontWeight="700"
                     sx={{
-                        borderRadius: 2,
-                        px: 4,
-                        py: 1.5,
-                        fontWeight: 600,
-                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                        '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                        }
+                        mb: 4,
+                        display: 'flex',
+                        alignItems: 'center'
                     }}
                 >
-                    Ir al Departamento
-                </Button>
-            </Box>
-        </Box>
-    );
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 48,
+                            height: 48,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            color: 'white',
+                            mr: 2
+                        }}
+                    >
+                        <Description sx={{ fontSize: 28 }} />
+                    </Box>
+                    Documentación Requerida
+                </Typography>
+
+                <Box sx={{ maxHeight: 600, overflow: 'auto', pr: 1 }}>
+                    {tramite.documentos.map((documento, index) => (
+                        <ModernDocumentItem
+                            key={index}
+                            document={documento}
+                            index={index}
+                        />
+                    ))}
+                </Box>
+
+                {/* Resumen de documentación */}
+                <Box
+                    sx={{
+                        mt: 3,
+                        p: 3,
+                        borderRadius: 2,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                    }}
+                >
+                    <Typography variant="h6" fontWeight="600" gutterBottom color="primary.main">
+                        📋 Resumen de Documentación
+                    </Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <Typography variant="body2" fontWeight="600">
+                                Total de documentos:
+                            </Typography>
+                            <Typography variant="body1" color="primary.main" fontWeight="700">
+                                {tramite.documentos.length}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Typography variant="body2" fontWeight="600">
+                                Documentos originales:
+                            </Typography>
+                            <Typography variant="body1" color="primary.main" fontWeight="700">
+                                {tramite.documentos.filter(doc => doc.original).length}
+                            </Typography>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Paper>
+
+            {/* Información de Contacto */}
+            <Paper
+                sx={{
+                    p: 4,
+                    borderRadius: 2,
+                    background: '#ffffff',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                }}
+            >
+                <Typography
+                    variant="h4"
+                    gutterBottom
+                    fontWeight="700"
+                    sx={{
+                        mb: 4,
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 48,
+                            height: 48,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            color: 'white',
+                            mr: 2
+                        }}
+                    >
+                        <LocationOn sx={{ fontSize: 28 }} />
+                    </Box>
+                    Información de Contacto
+                </Typography>
+
+                <Grid container spacing={3}>
+                    {[
+                        { icon: <LocationOn />, label: 'Ubicación', value: tramite.ubicacion, color: 'primary' },
+                        { icon: <Phone />, label: 'Teléfono', value: tramite.telefono, color: 'primary' },
+                        { icon: <Email />, label: 'Email', value: tramite.email, color: 'primary' },
+                        { icon: <AccessTime />, label: 'Horario', value: tramite.horario, color: 'primary' }
+                    ].map((item, index) => (
+                        <Grid item xs={12} sm={6} key={index}>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    borderRadius: 2,
+                                    background: alpha(theme.palette[item.color].main, 0.05),
+                                    border: `1px solid ${alpha(theme.palette[item.color].main, 0.1)}`,
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        borderColor: alpha(theme.palette[item.color].main, 0.3),
+                                        transform: 'translateY(-2px)'
+                                    }
+                                }}
+                            >
+                                <Box display="flex" alignItems="center" mb={1}>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: 2,
+                                            background: `linear-gradient(135deg, ${theme.palette[item.color].main} 0%, ${theme.palette[item.color].dark} 100%)`,
+                                            color: 'white',
+                                            mr: 1.5
+                                        }}
+                                    >
+                                        {item.icon}
+                                    </Box>
+                                    <Typography variant="body2" fontWeight="600" color="text.primary">
+                                        {item.label}
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" color="text.secondary">
+                                    {item.value}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    ))}
+                </Grid>
+
+                {tramite.contacto && (
+                    <Box
+                        sx={{
+                            mt: 3,
+                            p: 3,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                            color: 'white'
+                        }}
+                    >
+                        <Typography variant="h6" fontWeight="600" gutterBottom>
+                            👤 Persona Responsable
+                        </Typography>
+                        <Typography variant="body1">
+                            {tramite.contacto}
+                        </Typography>
+                    </Box>
+                )}
+            </Paper>
+        </Grid>
+    </Grid>
+
+    <Box
+        sx={{
+            mt: 4,
+            p: 4,
+            borderRadius: 2,
+            background: '#ffffff',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            display: 'flex',
+            gap: 2,
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+        }}
+    >
+        <Button
+            variant="outlined"
+            startIcon={<Close />}
+            onClick={onCerrar}
+            sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                '&:hover': {
+                    border: `2px solid ${theme.palette.primary.main}`,
+                    background: alpha(theme.palette.primary.main, 0.04)
+                }
+            }}
+        >
+            Volver a la Lista
+        </Button>
+        <Button
+            variant="contained"
+            startIcon={<LocationOn />}
+            sx={{
+                borderRadius: 2,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }
+            }}
+        >
+            Ir al Departamento
+        </Button>
+    </Box>
+</Box>
+);
 }
 
 // Footer moderno gris claro
@@ -2087,6 +2267,8 @@ function ModernFooter() {
 const ModernTramites = () => {
     const [tramiteSeleccionado, setTramiteSeleccionado] = useState(null);
     const [categoriaActiva, setCategoriaActiva] = useState('todos');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearchActive, setIsSearchActive] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -2099,9 +2281,46 @@ const ModernTramites = () => {
         setTramiteSeleccionado(null);
     };
 
-    const tramitesFiltrados = categoriaActiva === 'todos'
-        ? tramitesData
-        : tramitesData;
+    const handleSearchChange = (term) => {
+        setSearchTerm(term);
+        setIsSearchActive(term.trim().length > 0);
+    };
+
+    const handleSearchSelect = (tramite) => {
+        handleVerDetalles(tramite);
+    };
+
+    // Filtrar trámites por categoría y búsqueda
+    const tramitesFiltrados = tramitesData.filter(tramite => {
+        // Filtrar por categoría
+        const categoriaMatch = categoriaActiva === 'todos' || tramite.categoria === categoriaActiva;
+
+        // Si no hay término de búsqueda, solo filtrar por categoría
+        if (!searchTerm.trim()) {
+            return categoriaMatch;
+        }
+
+        // Si hay término de búsqueda, filtrar por ambos
+        const term = searchTerm.toLowerCase();
+        const camposBusqueda = [
+            tramite.titulo,
+            tramite.descripcion,
+            tramite.departamento,
+            tramite.ubicacion,
+            tramite.contacto,
+            ...tramite.documentos.map(doc => doc.nombre),
+            ...tramite.pasos.map(paso => paso.titulo + ' ' + paso.descripcion)
+        ];
+
+        const busquedaMatch = camposBusqueda.some(campo =>
+            campo && campo.toString().toLowerCase().includes(term)
+        );
+
+        return categoriaMatch && busquedaMatch;
+    });
+
+    // Mostrar resultados solo si hay búsqueda activa
+    const mostrarResultados = isSearchActive || searchTerm.trim().length > 0;
 
     return (
         <ThemeProvider theme={greenTheme}>
@@ -2158,19 +2377,45 @@ const ModernTramites = () => {
                                 onCategoriaChange={setCategoriaActiva}
                             />
 
-                            <ModernSearchBar />
+                            <ModernSearchBar
+                                onSearchChange={handleSearchChange}
+                                onSearchSelect={handleSearchSelect}
+                            />
 
-                            {/* Grid de trámites más cuadrados */}
-                            <Grid container spacing={3}>
-                                {tramitesFiltrados.map((tramite) => (
-                                    <Grid item xs={12} sm={6} md={4} lg={3} key={tramite.id}>
-                                        <ModernTramiteCard
-                                            tramite={tramite}
-                                            onVerDetalles={handleVerDetalles}
-                                        />
+                            {/* Mostrar mensaje si no hay resultados de búsqueda */}
+                            {mostrarResultados && tramitesFiltrados.length === 0 ? (
+                                <Paper
+                                    sx={{
+                                        p: 4,
+                                        textAlign: 'center',
+                                        borderRadius: 2,
+                                        background: alpha(theme.palette.primary.main, 0.03),
+                                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                                    }}
+                                >
+                                    <Search sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                                    <Typography variant="h6" gutterBottom fontWeight="600">
+                                        No se encontraron resultados para "{searchTerm}"
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Intenta con otras palabras clave o verifica la ortografía.
+                                    </Typography>
+                                </Paper>
+                            ) : (
+                                <>
+                                    {/* Grid de trámites - MOSTRAR SIEMPRE (incluso sin búsqueda) */}
+                                    <Grid container spacing={3}>
+                                        {tramitesFiltrados.map((tramite) => (
+                                            <Grid item xs={12} sm={6} md={4} lg={3} key={tramite.id}>
+                                                <ModernTramiteCard
+                                                    tramite={tramite}
+                                                    onVerDetalles={handleVerDetalles}
+                                                />
+                                            </Grid>
+                                        ))}
                                     </Grid>
-                                ))}
-                            </Grid>
+                                </>
+                            )}
                         </>
                     )}
                 </Container>

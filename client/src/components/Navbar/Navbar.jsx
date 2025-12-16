@@ -26,6 +26,7 @@ import SolarPowerIcon from '@mui/icons-material/SolarPower';
 import BusinessIcon from '@mui/icons-material/Business';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import DeviceHubIcon from '@mui/icons-material/DeviceHub';
+import {FactoryIcon} from "lucide-react";
 
 
 const Search = styled("div")(({ theme }) => ({
@@ -81,6 +82,7 @@ function Navbar() {
         "Ingeniería en Administración",
         "Ingeniería en Sistemas Automotrices",
         "Ingeniería en TIC'S",
+        "Ingeniería Industrial",
     ]
 
     const carreraIcons = {
@@ -92,6 +94,7 @@ function Navbar() {
         "Ingeniería en Administración": <BusinessIcon sx={{ mr: 1, fontSize: 18 }} />,
         "Ingeniería en Sistemas Automotrices": <DirectionsCarIcon sx={{ mr: 1, fontSize: 18 }} />,
         "Ingeniería en TIC'S": <DeviceHubIcon sx={{ mr: 1, fontSize: 18 }} />,
+        "Ingeniería Industrial": <FactoryIcon sx={{ mr: 1, fontSize: 18 }} />
     };
 
     const handleClickCarrera = (event) => setAnchorCarrera(event.currentTarget);
@@ -100,10 +103,10 @@ function Navbar() {
     const handleCarreraSelect = (carrera) => {
         if (carrera === "Ingeniería en Sistemas Computacionales") {
             clearHighlights(); // limpia cualquier highlight anterior
-            setTimeout(() => highlightBuildings(["A", "B", "E"]), 50); // ilumina A y B
+            setTimeout(() => highlightBuildings(["A", "B"]), 50); // ilumina A y B
         } else if (carrera === "Gastronomía") {
             clearHighlights(); // limpia cualquier highlight anterior
-            setTimeout(() => highlightBuildings(["C", "B", "D", "E"]), 50);
+            setTimeout(() => highlightBuildings(["C", "B", "D", ]), 50);
         }else if (carrera === "Ingeniería en TIC'S") {
             clearHighlights(); // limpia cualquier highlight anterior
             setTimeout(() => highlightBuildings(["E"]), 50);
@@ -116,6 +119,14 @@ function Navbar() {
         } else if (carrera === "Contaduría Pública") {
             clearHighlights(); // limpia cualquier highlight anterior
             setTimeout(() => highlightBuildings([ "D"]), 50);
+        }
+        else if (carrera === "Ingeniería Ambiental") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings([ "AUDITORIO"]), 50);
+        }
+        else if (carrera === "Ingeniería Industrial") {
+            clearHighlights(); // limpia cualquier highlight anterior
+            setTimeout(() => highlightBuildings([ "F"]), 50);
         }
         else  {
             clearHighlights(); // apaga si no es esa carrera
@@ -165,7 +176,7 @@ function Navbar() {
             >
                 <Box
                     component="img"
-                    src="/logo.png"
+                    src="./img/logo.png"
                     alt="Logo"
                     sx={{ height: 32, mr: 2 }}
                 />

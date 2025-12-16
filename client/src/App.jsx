@@ -282,13 +282,8 @@ function AnimatedIcons({ buildings, visible, onContactClick }) {
     );
 }
 
-function Piso() {
-    const { scene } = useGLTF("/models/caminoTESO.glb");
-    return <primitive object={scene} scale={50} position={[25, 0, 0]} rotation={[0, (300 * Math.PI) / 180, 0]} />;
-}
-
 // ==========================================================
-// 🔹 CONTROLES MINECRAFT (FIRST PERSON) - CÁMARA ELEVADA
+// 🔹 CONTROLES MINECRAFT (FIRST PERSON) - CORREGIDO SIN OJO DE PEZ
 // ==========================================================
 function MinecraftControls() {
     const { camera, gl } = useThree();
@@ -315,14 +310,14 @@ function MinecraftControls() {
     const sprintSpeed = 40;
     const currentSpeed = useRef(walkSpeed);
     const topViewSpeed = 0.5;
-    const zoomSpeed = 2;
+    const zoomSpeed = 1; // Reducido para zoom más suave
     const jumpForce = 12;
     const gravity = -25;
 
     // 🔹 AJUSTE: Alturas más elevadas
-    const initialHeight = 15; // Aumentado de 10 a 15
-    const minHeight = 15;     // Aumentado de 10 a 15 (altura mínima del suelo)
-    const maxHeight = 100;    // Altura máxima para salto
+    const initialHeight = 15;
+    const minHeight = 15;
+    const maxHeight = 100;
 
     const [isGrounded, setIsGrounded] = useState(true);
     const [isMouseLooking, setIsMouseLooking] = useState(false);
@@ -334,9 +329,14 @@ function MinecraftControls() {
     const lastMousePosition = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
-        // 🔹 AJUSTE: Posición inicial más elevada
+        // Configuración de cámara para reducir distorsión
         camera.position.set(0, initialHeight, 0);
         camera.rotation.order = 'YXZ';
+
+        // Ajustar el near plane para mejor calidad
+        camera.near = 0.1;
+        camera.far = 2000;
+
         originalPosition.current.copy(camera.position);
     }, [camera]);
 
@@ -463,10 +463,11 @@ function MinecraftControls() {
                 event.preventDefault();
                 const zoomAmount = event.deltaY > 0 ? zoomSpeed : -zoomSpeed;
 
+                // 🔹 CAMBIO: Rango de FOV más conservador para evitar distorsión
                 const newFov = THREE.MathUtils.clamp(
                     camera.fov + zoomAmount,
-                    30,
-                    90
+                    45,  // Mínimo aumentado (era 30)
+                    65   // Máximo reducido (era 90)
                 );
 
                 camera.fov = newFov;
@@ -552,7 +553,6 @@ function MinecraftControls() {
 
         originalPosition.current.copy(camera.position);
 
-        // 🔹 AJUSTE: Vista superior más elevada
         camera.position.set(originalPosition.current.x, 250, originalPosition.current.z);
         camera.rotation.set(-Math.PI / 2, 0, 0);
         camera.fov = 60;
@@ -567,10 +567,10 @@ function MinecraftControls() {
     const returnToFirstPerson = () => {
         if (!isTopView) return;
 
-        // 🔹 AJUSTE: Volver a la altura inicial elevada
+        // 🔹 CAMBIO: FOV reducido para vista más natural
         camera.position.set(originalPosition.current.x, initialHeight, originalPosition.current.z);
         camera.rotation.set(0, 0, 0);
-        camera.fov = 100;
+        camera.fov = 55; // Reducido de 100 a 55
         camera.updateProjectionMatrix();
 
         gl.domElement.style.cursor = 'crosshair';
@@ -581,7 +581,7 @@ function MinecraftControls() {
 
     const checkGrounded = () => {
         raycaster.current.set(camera.position, new THREE.Vector3(0, -1, 0));
-        const groundDistance = minHeight + 0.1; // 🔹 AJUSTE: Distancia al suelo actualizada
+        const groundDistance = minHeight + 0.1;
         return raycaster.current.ray.origin.y - groundDistance <= 0;
     };
 
@@ -623,7 +623,6 @@ function MinecraftControls() {
 
         const grounded = checkGrounded();
         if (grounded && camera.position.y < minHeight) {
-            // 🔹 AJUSTE: Establecer altura mínima elevada
             camera.position.y = minHeight;
             velocity.current.y = 0;
             setIsGrounded(true);
@@ -636,7 +635,6 @@ function MinecraftControls() {
         camera.position.x = THREE.MathUtils.clamp(camera.position.x, -boundary, boundary);
         camera.position.z = THREE.MathUtils.clamp(camera.position.z, -boundary, boundary);
 
-        // 🔹 AJUSTE: Límite máximo de altura actualizado
         if (camera.position.y > maxHeight) {
             camera.position.y = maxHeight;
             velocity.current.y = Math.min(velocity.current.y, 0);
@@ -664,8 +662,10 @@ function HomeWithModel() {
         { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-608, 0, -837], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
         { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [330, 0, 500], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
         { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-987, 0, -839], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "F", path: "/models/EDIFICIOF.glb", color: "red", position: [500, 0, 425], scale: [30, 40, 40], rotation: [0, (90 * Math.PI) / 180, 0] },
         { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [1050, 0, 460], scale: [10, 18, 11], rotation: [0, (180 * Math.PI) / 180, 0] },
         { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [231, 0, 15], scale: [7, 7, 6], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "AUDITORIO", path: "/models/auditorio.glb", color: "blue", position: [0, 0, 0], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
     ];
 
     useEffect(() => {
@@ -716,7 +716,7 @@ function HomeWithModel() {
         // Solo deseleccionar si se hizo click en el piso (no en un edificio)
         if (event.object && event.object.isMesh) {
             // Verificar si es el piso (por posición o alguna propiedad)
-            if (event.object.position.y === -2) { // El piso está en Y = -2
+            if (event.object.position.y === -2) {
                 setClickedBuildings([]);
             }
         }
@@ -1077,25 +1077,37 @@ function HomeWithModel() {
             )}
 
             <Canvas
-                camera={{ position: [0, 120, 200], fov: 75 }}
-                gl={{ alpha: true }}
-                style={{ background: "#b3e5ff", cursor: 'crosshair' }}
+                camera={{
+                    position: [0, 30, 200],
+                    fov: 55, // 🔹 CAMBIO: Reducido de 75 a 55
+                    near: 0.1,
+                    far: 2000
+                }}
+                gl={{
+                    alpha: true,
+                    antialias: true // 🔹 Mejorar calidad
+                }}
+                style={{
+                    background: "#b3e5ff",
+                    cursor: 'crosshair'
+                }}
+                shadows // 🔹 Opcional: activar sombras si las necesitas
             >
                 <ambientLight intensity={0.6} />
-                <directionalLight position={[15, 20, 10]} />
+                <directionalLight
+                    position={[15, 20, 10]}
+                    castShadow // 🔹 Opcional
+                />
 
                 {/* Piso con manejo de clicks */}
                 <mesh
                     rotation-x={-Math.PI / 2}
                     position={[0, 0, 0]}
-
                     onClick={handleBackgroundClick}
                 >
                     <planeGeometry args={[5000, 5000]} />
                     <meshStandardMaterial color="#87E753" />
                 </mesh>
-
-
 
                 <primitive
                     object={scene}
@@ -1103,7 +1115,6 @@ function HomeWithModel() {
                     scale={[2, 2, 2]}
                     onClick={handleBackgroundClick}
                 />
-
 
                 {/* Edificios con soporte para selección múltiple */}
                 {edificios.map((edificio) => (
