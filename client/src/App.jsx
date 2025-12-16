@@ -18,6 +18,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import ContactPhoneIcon from "@mui/icons-material/ContactPhone";
 import InfoIcon from "@mui/icons-material/Info";
 import MenuDeCafeteria from "./components/menuDeCafeteria/menuDeCafeteria";
+import Tramites from "./components/Tramites/Tramites";
 
 // ==========================================================
 // 🔹 BRÚJULA HTML FIJA (sin hooks R3F)
@@ -105,6 +106,35 @@ function HtmlCompass() {
 }
 
 // ==========================================================
+// 🔹 COMPONENTE DE VEGETACIÓN - SIN ILUMINACIÓN ESPECIAL
+// ==========================================================
+function VegetationModel({
+                             id,
+                             path,
+                             position,
+                             scale,
+                             rotation = [0, 0, 0],
+                         }) {
+    const { scene } = useGLTF(path);
+
+    // Rotación inicial
+    useEffect(() => {
+        if (!scene) return;
+        scene.rotation.set(rotation[0], rotation[1], rotation[2]);
+    }, [scene, rotation]);
+
+    if (!scene) return null;
+
+    return (
+        <primitive
+            object={scene}
+            scale={scale}
+            position={position}
+        />
+    );
+}
+
+// ==========================================================
 // 🔹 COMPONENTE DE EDIFICIO - SOLO ILUMINACIÓN AL CLICK
 // ==========================================================
 function BuildingModel({
@@ -174,10 +204,20 @@ function BuildingModel({
 // ==========================================================
 // 🔹 ÍCONOS ANIMADOS - MEJORADO PARA MOSTRAR MÚLTIPLES EDIFICIOS
 // ==========================================================
-function AnimatedIcons({ buildings, visible }) {
+function AnimatedIcons({ buildings, visible, onContactClick }) {
     const icons = [
         { Icon: AssignmentIcon, offset: new THREE.Vector3(-40, 0, 0), label: "Trámites" },
-        { Icon: ContactPhoneIcon, offset: new THREE.Vector3(0, 0, 40), label: "Contacto" },
+        {
+            Icon: ContactPhoneIcon,
+            offset: new THREE.Vector3(0, 0, 40),
+            label: "Contacto",
+            action: (building) => {
+                console.log("Click en contacto del edificio:", building.id);
+                if (onContactClick) {
+                    onContactClick(building.id);
+                }
+            }
+        },
         { Icon: InfoIcon, offset: new THREE.Vector3(40, 0, 0), label: "Información" },
     ];
 
@@ -226,26 +266,42 @@ function AnimatedIcons({ buildings, visible }) {
                             center
                         >
                             <div
-                                onClick={() => alert(`${item.label} del ${b.id}`)}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (item.action) {
+                                        item.action(b);
+                                    } else {
+                                        alert(`${item.label} del Edificio ${b.id}`);
+                                    }
+                                }}
                                 style={{
                                     cursor: "pointer",
                                     transform: `scale(${0.8 + 0.2 * progress})`,
                                     opacity: progress,
                                     transition: "transform 0.2s ease, opacity 0.2s ease",
-                                    background: "none",
-                                    border: "none",
+                                    background: "rgba(255, 255, 255, 0.9)",
+                                    border: "2px solid #1976d2",
+                                    borderRadius: "50%",
                                     display: "flex",
                                     justifyContent: "center",
                                     alignItems: "center",
+                                    width: "50px",
+                                    height: "50px",
+                                    boxShadow: "0 4px 8px rgba(0,0,0,0.3)"
                                 }}
-                                onMouseEnter={(e) =>
-                                    (e.currentTarget.style.transform = `scale(${1 + 0.2 * progress})`)
-                                }
-                                onMouseLeave={(e) =>
-                                    (e.currentTarget.style.transform = `scale(${0.8 + 0.2 * progress})`)
-                                }
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.transform = `scale(${1.1 + 0.2 * progress})`;
+                                    e.currentTarget.style.background = "rgba(25, 118, 210, 0.1)";
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = `scale(${0.8 + 0.2 * progress})`;
+                                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.9)";
+                                }}
                             >
-                                <item.Icon style={{ fontSize: 32, color: "black" }} />
+                                <item.Icon style={{
+                                    fontSize: 28,
+                                    color: "#1976d2"
+                                }} />
                             </div>
                         </Html>
                     );
@@ -255,13 +311,8 @@ function AnimatedIcons({ buildings, visible }) {
     );
 }
 
-function Piso() {
-    const { scene } = useGLTF("/models/caminoTESO.glb");
-    return <primitive object={scene} scale={50} position={[25, 0, 0]} rotation={[0, (300 * Math.PI) / 180, 0]} />;
-}
-
 // ==========================================================
-// 🔹 CONTROLES MINECRAFT (FIRST PERSON) - CÁMARA ELEVADA
+// 🔹 CONTROLES MINECRAFT (FIRST PERSON) - CORREGIDO SIN OJO DE PEZ
 // ==========================================================
 function MinecraftControls() {
     const { camera, gl } = useThree();
@@ -284,18 +335,18 @@ function MinecraftControls() {
     const velocity = useRef(new THREE.Vector3());
     const direction = useRef(new THREE.Vector3());
 
-    const walkSpeed = 10;
-    const sprintSpeed = 20;
+    const walkSpeed = 30;
+    const sprintSpeed = 40;
     const currentSpeed = useRef(walkSpeed);
     const topViewSpeed = 0.5;
-    const zoomSpeed = 2;
+    const zoomSpeed = 1; // Reducido para zoom más suave
     const jumpForce = 12;
     const gravity = -25;
 
     // 🔹 AJUSTE: Alturas más elevadas
-    const initialHeight = 15; // Aumentado de 10 a 15
-    const minHeight = 15;     // Aumentado de 10 a 15 (altura mínima del suelo)
-    const maxHeight = 100;    // Altura máxima para salto
+    const initialHeight = 15;
+    const minHeight = 15;
+    const maxHeight = 100;
 
     const [isGrounded, setIsGrounded] = useState(true);
     const [isMouseLooking, setIsMouseLooking] = useState(false);
@@ -307,9 +358,14 @@ function MinecraftControls() {
     const lastMousePosition = useRef({ x: 0, y: 0 });
 
     useEffect(() => {
-        // 🔹 AJUSTE: Posición inicial más elevada
+        // Configuración de cámara para reducir distorsión
         camera.position.set(0, initialHeight, 0);
         camera.rotation.order = 'YXZ';
+
+        // Ajustar el near plane para mejor calidad
+        camera.near = 0.1;
+        camera.far = 2000;
+
         originalPosition.current.copy(camera.position);
     }, [camera]);
 
@@ -436,22 +492,23 @@ function MinecraftControls() {
                 event.preventDefault();
                 const zoomAmount = event.deltaY > 0 ? zoomSpeed : -zoomSpeed;
 
+                // 🔹 CAMBIO: Rango de FOV más conservador para evitar distorsión
                 const newFov = THREE.MathUtils.clamp(
                     camera.fov + zoomAmount,
-                    30,
-                    90
+                    45,  // Mínimo aumentado (era 30)
+                    65   // Máximo reducido (era 90)
                 );
 
                 camera.fov = newFov;
                 camera.updateProjectionMatrix();
             } else {
                 event.preventDefault();
-                const zoomAmount = event.deltaY > 0 ? 20 : -20;
+                const zoomAmount = event.deltaY > 0 ? 80 : -80;
 
                 const newHeight = THREE.MathUtils.clamp(
                     camera.position.y + zoomAmount,
-                    50,
-                    800
+                    350,
+                    950
                 );
 
                 camera.position.y = newHeight;
@@ -525,7 +582,6 @@ function MinecraftControls() {
 
         originalPosition.current.copy(camera.position);
 
-        // 🔹 AJUSTE: Vista superior más elevada
         camera.position.set(originalPosition.current.x, 250, originalPosition.current.z);
         camera.rotation.set(-Math.PI / 2, 0, 0);
         camera.fov = 60;
@@ -540,10 +596,10 @@ function MinecraftControls() {
     const returnToFirstPerson = () => {
         if (!isTopView) return;
 
-        // 🔹 AJUSTE: Volver a la altura inicial elevada
+        // 🔹 CAMBIO: FOV reducido para vista más natural
         camera.position.set(originalPosition.current.x, initialHeight, originalPosition.current.z);
         camera.rotation.set(0, 0, 0);
-        camera.fov = 75;
+        camera.fov = 55; // Reducido de 100 a 55
         camera.updateProjectionMatrix();
 
         gl.domElement.style.cursor = 'crosshair';
@@ -554,7 +610,7 @@ function MinecraftControls() {
 
     const checkGrounded = () => {
         raycaster.current.set(camera.position, new THREE.Vector3(0, -1, 0));
-        const groundDistance = minHeight + 0.1; // 🔹 AJUSTE: Distancia al suelo actualizada
+        const groundDistance = minHeight + 0.1;
         return raycaster.current.ray.origin.y - groundDistance <= 0;
     };
 
@@ -596,7 +652,6 @@ function MinecraftControls() {
 
         const grounded = checkGrounded();
         if (grounded && camera.position.y < minHeight) {
-            // 🔹 AJUSTE: Establecer altura mínima elevada
             camera.position.y = minHeight;
             velocity.current.y = 0;
             setIsGrounded(true);
@@ -609,7 +664,6 @@ function MinecraftControls() {
         camera.position.x = THREE.MathUtils.clamp(camera.position.x, -boundary, boundary);
         camera.position.z = THREE.MathUtils.clamp(camera.position.z, -boundary, boundary);
 
-        // 🔹 AJUSTE: Límite máximo de altura actualizado
         if (camera.position.y > maxHeight) {
             camera.position.y = maxHeight;
             velocity.current.y = Math.min(velocity.current.y, 0);
@@ -620,23 +674,82 @@ function MinecraftControls() {
 }
 
 // ==========================================================
+// 🔹 COMPONENTE DE VEGETACIÓN - RENDERIZA TODOS LOS ÁRBOLES/ARBUSTOS
+// ==========================================================
+function Vegetation() {
+    // Definición de todos los modelos de vegetación
+    const vegetationModels = [
+        // Piños
+        { id: "pino", path: "/models/pinos.glb", position: [50, 0, 270], scale: [2, 2, 2], rotation: [0, 0, 0] },
+        // Arbustos E2
+        { id: "arbustoE2", path: "/models/arbustoE2.glb", position: [140, 0, 475], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        // Arbustos E1
+        { id: "arbustoE1", path: "/models/arbustoE1.glb", position: [146, 0, 384], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Arbusto edificio B
+        { id: "arbustoB1", path: "/models/arbustoB1.glb", position: [-210, 0, 55], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoB2", path: "/models/arbustoB2.glb", position: [-210, 0, 142], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Arbusto edificio gastro
+        { id: "arbustoC1", path: "/models/arbustoC1.glb", position: [-424, 0, -339], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoC2", path: "/models/arbustoC2.glb", position: [-424, 0, -251], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Arbusto edificio gastro
+        { id: "arbustoD1", path: "/models/arbustoD1.glb", position: [-424, 0, -815], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoD2", path: "/models/arbustoD2.glb", position: [-424, 0, -670], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+
+        // Árboles A2
+        { id: "arbolesA2", path: "/models/ArbolesA2.glb", position: [0, 0, 0], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+
+        // Árboles A1
+        { id: "arbolesA1", path: "/models/ArbolesA1.glb", position: [-95, 0, 570], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+
+        // 3 árboles altos
+        { id: "3arbolesaltos", path: "/models/3arbolesaltos.glb", position: [-80, 0, 375], scale: [2.5, 2.5, 2.5], rotation: [0, (180 * Math.PI) / 180, 0] },
+
+        // 3 árboles normales
+        { id: "3arboles", path: "/models/3arboles.glb", position: [300, 0, -300], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+
+    ];
+
+    return (
+        <>
+            {vegetationModels.map((model) => (
+                <VegetationModel
+                    key={model.id}
+                    id={model.id}
+                    path={model.path}
+                    position={model.position}
+                    scale={model.scale}
+                    rotation={model.rotation}
+                />
+            ))}
+        </>
+    );
+}
+
+// ==========================================================
 // 🔹 HOME CON MODELO - SISTEMA DE SELECCIÓN COMBINADO
 // ==========================================================
 function HomeWithModel() {
-    const [clickedBuildings, setClickedBuildings] = useState([]); // Múltiples edificios clickeados
-    const [highlightedBuildings, setHighlightedBuildings] = useState([]); // Del contexto
+    const [clickedBuildings, setClickedBuildings] = useState([]);
+    const [highlightedBuildings, setHighlightedBuildings] = useState([]);
+    const [contactOpen, setContactOpen] = useState(false);
+    const [selectedEdificioData, setSelectedEdificioData] = useState(null);
     const { highlightedBuildings: contextHighlightedBuildings, trigger } = useContext(MapContext);
     const mountedRef = useRef(false);
 
     const edificios = [
-        { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-40, 0, 155], scale: [1.5, 1.5, 1.5], rotation: [0, Math.PI, 0] },
-        { id: "B", path: "/models/EDIFICIOB.glb", color: "blue", position: [-40, 0, 40], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "C", path: "/models/EDIFICIOC.glb", color: "green", position: [-150, 0, -80], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-150, 0, -210], scale: [2, 3.5, 3], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [100, 0, 180], scale: [2, 3.5, 3], rotation: [0, (95 * Math.PI) / 180, 0] },
-        { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-290, 0, -255], scale: [2, 3.5, 3], rotation: [0, (264 * Math.PI) / 180, 0] },
-        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [250, 0, 120], scale: [3, 5, 4], rotation: [0, (190 * Math.PI) / 180, 0] },
-        { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [120, 0, 10], scale: [3, 3, 3], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-273.7, 0, 450], scale: [5.9, 5, 5], rotation: [0, Math.PI, 0] },
+        { id: "B", path: "/models/EDIFICIOB.glb", color: "blue", position: [-377, 0, 30], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "C", path: "/models/EDIFICIOC.glb", color: "green", position: [-610, 0, -365], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-608, 0, -837], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [330, 0, 500], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
+        { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-987, 0, -839], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "F", path: "/models/EDIFICIOF.glb", color: "red", position: [585, 0, 380], scale: [31, 40, 40], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [821, 0, 350], scale: [8.5, 18, 13.8], rotation: [0, (180 * Math.PI) / 180, 0] },
+        { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [231, 0, 15], scale: [7, 7, 6], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "AUDITORIO", path: "/models/auditorio.glb", color: "blue", position: [871, 0, -50], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
     ];
 
     useEffect(() => {
@@ -687,37 +800,405 @@ function HomeWithModel() {
         // Solo deseleccionar si se hizo click en el piso (no en un edificio)
         if (event.object && event.object.isMesh) {
             // Verificar si es el piso (por posición o alguna propiedad)
-            if (event.object.position.y === -2) { // El piso está en Y = -2
+            if (event.object.position.y === -2) {
                 setClickedBuildings([]);
             }
+        }
+    };
+
+    // 🔹 FUNCIÓN: Manejar click en contacto desde los íconos
+    const handleContactFromIcon = (buildingId) => {
+        const contactDataPorEdificio = {
+            "A": {
+                nombre: "Edificio A",
+                contactos: [
+                    {
+                        nombre: "CIRILO MARTÍNEZ LIGA",
+                        puesto: "JEFE DE LA DIVISIÓN DE INGENIERIA EN SISTEMAS COMPUTACIONALES",
+                        correo: "sc@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "B": {
+                nombre: "Edificio B",
+                contactos: [
+                    {
+                        nombre: "JOSÉ ISRAEL CAMPERO DOMÍNGUEZ",
+                        puesto: "DIRECTOR GENERAL",
+                        correo: "direccion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "MIGUEL ÁNGEL HERNÁNDEZ ESPEJEL",
+                        puesto: "SECRETARIO DE EDUCACIÓN",
+                        correo: "seduc@edomex.gob.mx"
+                    },
+                    {
+                        nombre: "PABLO ALDO TAPIA BRICEÑO",
+                        puesto: "TITULAR DEL ÓRGANO INTERNO DE CONTROL",
+                        correo: "contraloria@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "MARÍA DEL CARMEN ARRIETA LÓPEZ",
+                        puesto: "DIRECTORA ACADÉMICA",
+                        correo: "dir.acad@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "JOSÉ ALEJANDRO CRUZ ÁLVAREZ",
+                        puesto: "SUBDIRECTOR ACADÉMICO",
+                        correo: "sub.academica@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "ERIKA IVONNE GERALDO MORALES",
+                        puesto: "JEFA DEL DEPARTAMENTO DE DESARROLLO ACADÉMICO",
+                        correo: "desarrollo.academico@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "JUAN ALBERTO BERNAL SORIANO",
+                        puesto: "JEFE DEL DEPARTAMENTO DE CIENCIAS BÁSICAS",
+                        correo: "ciencias.basicas@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "ALFREDO SEGUNDO PÉREZ",
+                        puesto: "JEFE DEL DEPARTAMENTO DE DIFUSIÓN Y CONCERTACIÓN",
+                        correo: "difusion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "MIGUEL ÁNGEL MORUA RAMÍREZ",
+                        puesto: "SUBDIRECTOR DE PLANEACIÓN",
+                        correo: "spyc@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "EDITH OLIVOS ESPINOSA",
+                        puesto: "JEFA DEL DEPARTAMENTO DE PLANEACIÓN Y PROGRAMACIÓN",
+                        correo: "planeacion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "ALEJANDRO TÉLLEZ PEÑA",
+                        puesto: "JEFE DEL DEPARTAMENTO DE ESTADÍSTICA Y EVALUACIÓN",
+                        correo: "estadistica.evaluacion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "JAIME GERARDO GONZÁLEZ ARELLANO",
+                        puesto: "SUBDIRECTOR DE SERVICIOS ADMINISTRATIVOS",
+                        correo: "sub.sadmin@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "C": {
+                nombre: "Edificio C",
+                contactos: [
+                    {
+                        nombre: "BEATRIZ ALCANTARA VELÁZQUEZ",
+                        puesto: "JEFA DE LA DIVISIÓN DE LICENCIATURA EN GASTRONOMÍA",
+                        correo: "gastronomia@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "D": {
+                nombre: "Edificio D",
+                contactos: [
+                    {
+                        nombre: "JAIME SILVA JUÁREZ",
+                        puesto: "JEFE DE LA DIVISIÓN DE INGENIERÍA EN ADMINISTRACIÓN",
+                        correo: "ing.admon@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "E": {
+                nombre: "Edificio E",
+                contactos: [
+                    {
+                        nombre: "MIGUEL ÁNGEL LUCIO LÓPEZ",
+                        puesto: "JEFE DE LA DIVISIÓN DE INGENIERÍA SISTEMAS AUTOMOTRICES",
+                        correo: "automotrices@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "BLANCA INÉS VALENCIA VÁZQUEZ",
+                        puesto: "JEFA DE LA DIVISIÓN DE INGENIERÍA EN TECNOLOGÍAS DE LA INFORMACIÓN Y COMUNICACIONES",
+                        correo: "ing.tics@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "NORA SOYUKI PORTILLO VÉLEZ",
+                        puesto: "SUBDIRECTORA DE POSGRADO E INVESTIGACIÓN",
+                        correo: "sub.posgrado@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "LEONARDO CORTÉS VERGARA",
+                        puesto: "JEFE DEL DEPARTAMENTO DE POSGRADO E INVESTIGACIÓN",
+                        correo: "posgrado.investigacion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "AMBROCIO SÁNCHEZ CRUZ",
+                        puesto: "DIRECTOR DE PLANEACIÓN Y VINCULACIÓN",
+                        correo: "direccion.pv@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "EDGAR OSIRIS GARCÍA IBARRA",
+                        puesto: "SUBDIRECTOR DE VINCULACIÓN",
+                        correo: "sub.vinculacion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "ANDREA MORENO RIVERA",
+                        puesto: "JEFA DEL DEPARTAMENTO DE VINCULACIÓN",
+                        correo: "vinculacion@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "SILVIA GLORIA MENDOZA FERNÁNDEZ",
+                        puesto: "JEFA DEL DEPARTAMENTO DE RESIDENCIAS PROFESIONALES Y SERVICIO SOCIAL",
+                        correo: "ss.rp@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "I": {
+                nombre: "Edificio I",
+                contactos: [
+                    {
+                        nombre: "TERESITA DE JESÚS SUÁREZ ALTAMIRANO",
+                        puesto: "JEFA DE LA DIVISIÓN DE CONTADOR PÚBLICO",
+                        correo: "cp@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "RAMÓN EDUARDO MARTÍNEZ GRIMALDO",
+                        puesto: "JEFE DE LA DIVISIÓN DE INGENIERÍA EN ENERGÍAS RENOVABLES",
+                        correo: "i.renovables@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "IND": {
+                nombre: "Edificio Industrial",
+                contactos: [
+                    {
+                        nombre: "ING. PATRICIA LÓPEZ GUTIÉRREZ",
+                        puesto: "COORDINADORA ÁREA INDUSTRIAL",
+                        correo: "industrial@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "ING. RAÚL MARTÍNEZ",
+                        puesto: "JEFE DE TALLERES INDUSTRIALES",
+                        correo: "talleresindustrial@tesoem.edu.mx"
+                    }
+                ]
+            },
+            "CAFE": {
+                nombre: "Cafetería",
+                contactos: [
+                    {
+                        nombre: "C. ANA MARÍA TORRES",
+                        puesto: "ENCARGADA DE CAFETERÍA",
+                        correo: "cafeteria@tesoem.edu.mx"
+                    },
+                    {
+                        nombre: "C. LUIS HERNÁNDEZ",
+                        puesto: "SUPLEMENTOS Y ALMACÉN",
+                        correo: "almacencafeteria@tesoem.edu.mx"
+                    }
+                ]
+            }
+        };
+
+        const datosEdificio = contactDataPorEdificio[buildingId];
+        if (datosEdificio) {
+            setSelectedEdificioData(datosEdificio);
+            setContactOpen(true);
+        } else {
+            // Si no hay datos específicos, mostrar datos genéricos
+            setSelectedEdificioData({
+                nombre: `Edificio ${buildingId}`,
+                contactos: [
+                    {
+                        nombre: "COORDINADOR DEL EDIFICIO",
+                        puesto: "INFORMACIÓN DE CONTACTO",
+                        correo: `edificio${buildingId.toLowerCase()}@tesoem.edu.mx`
+                    }
+                ]
+            });
+            setContactOpen(true);
         }
     };
 
     // Combinar todas las selecciones para mostrar íconos
     const allSelectedBuildings = [...clickedBuildings, ...highlightedBuildings];
 
+    const { scene } = useGLTF('/models/EXPLANADA.glb');
+
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
             <HtmlCompass />
 
+            {/* Popup de Contacto - FUERA del Canvas */}
+            {contactOpen && selectedEdificioData && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    zIndex: 9999,
+                    display: 'flex'
+                }}>
+                    <div style={{
+                        width: window.innerWidth <= 600 ? '90%' : '400px',
+                        height: '100%',
+                        backgroundColor: 'white',
+                        boxShadow: '2px 0 10px rgba(0,0,0,0.3)',
+                        display: 'flex',
+                        flexDirection: 'column'
+                    }}>
+                        {/* Header del popup */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '16px',
+                            backgroundColor: '#1976d2',
+                            color: 'white'
+                        }}>
+                            <h2 style={{ margin: 0, fontSize: '1.25rem' }}>
+                                Contacto - {selectedEdificioData.nombre}
+                            </h2>
+                            <button
+                                onClick={() => {
+                                    setContactOpen(false);
+                                    setSelectedEdificioData(null);
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'white',
+                                    fontSize: '24px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Contenido del popup */}
+                        <div style={{
+                            padding: '16px',
+                            overflow: 'auto',
+                            flex: 1
+                        }}>
+                            <div style={{ marginBottom: '24px' }}>
+                                <h3 style={{
+                                    color: '#1976d2',
+                                    marginBottom: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}>
+                                    <span style={{ fontSize: '20px' }}>🏢</span>
+                                    {selectedEdificioData.nombre}
+                                </h3>
+
+                                <div>
+                                    {selectedEdificioData.contactos.map((contacto, contactIndex) => (
+                                        <div key={contactIndex}>
+                                            <div style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                padding: '8px 0'
+                                            }}>
+                                                <strong style={{ fontSize: '14px' }}>
+                                                    {contacto.nombre}
+                                                </strong>
+                                                <span style={{
+                                                    fontSize: '12px',
+                                                    color: '#666',
+                                                    marginTop: '4px'
+                                                }}>
+                                                    {contacto.puesto}
+                                                </span>
+                                                <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                    marginTop: '4px'
+                                                }}>
+                                                    <span style={{ fontSize: '16px' }}>📧</span>
+                                                    <a
+                                                        href={`mailto:${contacto.correo}`}
+                                                        style={{
+                                                            fontSize: '12px',
+                                                            color: '#1976d2',
+                                                            textDecoration: 'none'
+                                                        }}
+                                                        onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                                                        onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                                                    >
+                                                        {contacto.correo}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            {contactIndex < selectedEdificioData.contactos.length - 1 && (
+                                                <hr style={{
+                                                    margin: '8px 0',
+                                                    border: 'none',
+                                                    borderTop: '1px solid #e0e0e0'
+                                                }} />
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Fondo clickeable para cerrar */}
+                    <div
+                        style={{
+                            flex: 1,
+                            height: '100%'
+                        }}
+                        onClick={() => {
+                            setContactOpen(false);
+                            setSelectedEdificioData(null);
+                        }}
+                    />
+                </div>
+            )}
+
             <Canvas
-                // 🔹 AJUSTE: Cámara inicial más elevada
-                camera={{ position: [0, 150, 300], fov: 75 }}
-                gl={{ alpha: true }}
-                style={{ background: "#b3e5ff", cursor: 'crosshair' }}
+                camera={{
+                    position: [0, 30, 200],
+                    fov: 55, // 🔹 CAMBIO: Reducido de 75 a 55
+                    near: 0.1,
+                    far: 2000
+                }}
+                gl={{
+                    alpha: true,
+                    antialias: true // 🔹 Mejorar calidad
+                }}
+                style={{
+                    background: "#b3e5ff",
+                    cursor: 'crosshair'
+                }}
+                shadows // 🔹 Opcional: activar sombras si las necesitas
             >
                 <ambientLight intensity={0.6} />
-                <directionalLight position={[15, 20, 10]} />
+                <directionalLight
+                    position={[15, 20, 10]}
+                    castShadow // 🔹 Opcional
+                />
 
                 {/* Piso con manejo de clicks */}
                 <mesh
                     rotation-x={-Math.PI / 2}
-                    position={[0, -2, 0]}
+                    position={[0, 0, 0]}
                     onClick={handleBackgroundClick}
                 >
-                    <planeGeometry args={[2000, 2000]} />
-                    <meshStandardMaterial color="#37F731" />
+                    <planeGeometry args={[5000, 5000]} />
+                    <meshStandardMaterial color="#87E753" />
                 </mesh>
+
+                <primitive
+                    object={scene}
+                    position={[0, 0, 500]}
+                    scale={[2, 2, 2]}
+                    onClick={handleBackgroundClick}
+                />
 
                 {/* Edificios con soporte para selección múltiple */}
                 {edificios.map((edificio) => (
@@ -730,11 +1211,15 @@ function HomeWithModel() {
                     />
                 ))}
 
+                {/* Vegetación - agregada como componente separado */}
+                <Vegetation />
+
                 {/* Íconos animados para todos los edificios seleccionados */}
                 {allSelectedBuildings.length > 0 && (
                     <AnimatedIcons
                         buildings={allSelectedBuildings}
                         visible={allSelectedBuildings.length > 0}
+                        onContactClick={handleContactFromIcon}
                     />
                 )}
 
@@ -764,6 +1249,7 @@ function App() {
             <Routes location={location} key={location.pathname}>
                 <Route path="/" element={<HomeWithModel />} />
                 <Route path="/menuDeCafeteria" element={<MenuDeCafeteria />} />
+                <Route path="/tramites" element={<Tramites />} />
                 <Route
                     path="/profile"
                     element={
