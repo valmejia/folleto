@@ -680,35 +680,35 @@ function Vegetation() {
     // Definición de todos los modelos de vegetación
     const vegetationModels = [
         // Piños
-        { id: "pino", path: "/models/pinos.glb", position: [50, 0, 270], scale: [2, 2, 2], rotation: [0, 0, 0] },
+        { id: "pino", path: "./models/pinos.glb", position: [50, 0, 270], scale: [2, 2, 2], rotation: [0, 0, 0] },
         // Arbustos E2
-        { id: "arbustoE2", path: "/models/arbustoE2.glb", position: [140, 0, 475], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoE2", path: "./models/arbustoE2.glb", position: [140, 0, 475], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
         // Arbustos E1
-        { id: "arbustoE1", path: "/models/arbustoE1.glb", position: [146, 0, 384], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoE1", path: "./models/arbustoE1.glb", position: [146, 0, 384], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
 
         // Arbusto edificio B
-        { id: "arbustoB1", path: "/models/arbustoB1.glb", position: [-210, 0, 55], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
-        { id: "arbustoB2", path: "/models/arbustoB2.glb", position: [-210, 0, 142], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoB1", path: "./models/arbustoB1.glb", position: [-210, 0, 55], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoB2", path: "./models/arbustoB2.glb", position: [-210, 0, 142], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
 
         // Arbusto edificio gastro
-        { id: "arbustoC1", path: "/models/arbustoC1.glb", position: [-424, 0, -339], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
-        { id: "arbustoC2", path: "/models/arbustoC2.glb", position: [-424, 0, -251], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoC1", path: "./models/arbustoC1.glb", position: [-424, 0, -339], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoC2", path: "./models/arbustoC2.glb", position: [-424, 0, -251], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
 
         // Arbusto edificio gastro
-        { id: "arbustoD1", path: "/models/arbustoD1.glb", position: [-424, 0, -815], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
-        { id: "arbustoD2", path: "/models/arbustoD2.glb", position: [-424, 0, -670], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoD1", path: "./models/arbustoD1.glb", position: [-424, 0, -815], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
+        { id: "arbustoD2", path: "./models/arbustoD2.glb", position: [-424, 0, -670], scale: [2.3, 2.3, 2.3], rotation: [0, 0, 0] },
 
         // Árboles A2
-        { id: "arbolesA2", path: "/models/ArbolesA2.glb", position: [0, 0, 0], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+        { id: "arbolesA2", path: "./models/ArbolesA2.glb", position: [0, 0, 0], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
 
         // Árboles A1
-        { id: "arbolesA1", path: "/models/ArbolesA1.glb", position: [-95, 0, 570], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+        { id: "arbolesA1", path: "./models/ArbolesA1.glb", position: [-95, 0, 570], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
 
         // 3 árboles altos
-        { id: "3arbolesaltos", path: "/models/3arbolesaltos.glb", position: [-80, 0, 375], scale: [2.5, 2.5, 2.5], rotation: [0, (180 * Math.PI) / 180, 0] },
+        { id: "3arbolesaltos", path: "./models/3arbolesaltos.glb", position: [-80, 0, 375], scale: [2.5, 2.5, 2.5], rotation: [0, (180 * Math.PI) / 180, 0] },
 
         // 3 árboles normales
-        { id: "3arboles", path: "/models/3arboles.glb", position: [300, 0, -300], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
+        { id: "3arboles", path: "./models/3arboles.glb", position: [300, 0, -300], scale: [2.5, 2.5, 2.5], rotation: [0, 0, 0] },
 
     ];
 
@@ -740,16 +740,16 @@ function HomeWithModel() {
     const mountedRef = useRef(false);
 
     const edificios = [
-        { id: "A", path: "/models/EDIFICIOA.glb", color: "red", position: [-273.7, 0, 450], scale: [5.9, 5, 5], rotation: [0, Math.PI, 0] },
-        { id: "B", path: "/models/EDIFICIOB.glb", color: "blue", position: [-377, 0, 30], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "C", path: "/models/EDIFICIOC.glb", color: "green", position: [-610, 0, -365], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "D", path: "/models/EDIFICIOD.glb", color: "purple", position: [-608, 0, -837], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "E", path: "/models/EDIFICIOE.glb", color: "yellow", position: [330, 0, 500], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
-        { id: "I", path: "/models/EDIFICIOI.glb", color: "orange", position: [-987, 0, -839], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "F", path: "/models/EDIFICIOF.glb", color: "red", position: [585, 0, 380], scale: [31, 40, 40], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "IND", path: "/models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [821, 0, 350], scale: [8.5, 18, 13.8], rotation: [0, (180 * Math.PI) / 180, 0] },
-        { id: "CAFE", path: "/models/CAFETERIA.glb", color: "pink", position: [231, 0, 15], scale: [7, 7, 6], rotation: [0, (90 * Math.PI) / 180, 0] },
-        { id: "AUDITORIO", path: "/models/auditorio.glb", color: "blue", position: [871, 0, -50], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
+        { id: "A", path: "./models/EDIFICIOA.glb", color: "red", position: [-273.7, 0, 450], scale: [5.9, 5, 5], rotation: [0, Math.PI, 0] },
+        { id: "B", path: "./models/EDIFICIOB.glb", color: "blue", position: [-377, 0, 30], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "C", path: "./models/EDIFICIOC.glb", color: "green", position: [-610, 0, -365], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "D", path: "./models/EDIFICIOD.glb", color: "purple", position: [-608, 0, -837], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "E", path: "./models/EDIFICIOE.glb", color: "yellow", position: [330, 0, 500], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
+        { id: "I", path: "./models/EDIFICIOI.glb", color: "orange", position: [-987, 0, -839], scale: [1.6, 1.7, 1.7], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "F", path: "./models/EDIFICIOF.glb", color: "red", position: [585, 0, 380], scale: [31, 40, 40], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "IND", path: "./models/EDIFICIOINDUSTRIAL.glb", color: "orange", position: [821, 0, 350], scale: [8.5, 18, 13.8], rotation: [0, (180 * Math.PI) / 180, 0] },
+        { id: "CAFE", path: "./models/CAFETERIA.glb", color: "pink", position: [231, 0, 15], scale: [7, 7, 6], rotation: [0, (90 * Math.PI) / 180, 0] },
+        { id: "AUDITORIO", path: "./models/auditorio.glb", color: "blue", position: [871, 0, -50], scale: [1.6, 1.7, 1.7], rotation: [0, (270 * Math.PI) / 180, 0] },
     ];
 
     useEffect(() => {
@@ -1019,9 +1019,9 @@ function HomeWithModel() {
     // Combinar todas las selecciones para mostrar íconos
     const allSelectedBuildings = [...clickedBuildings, ...highlightedBuildings];
 
-   const { scene: bandera } = useGLTF('/models/EXPLANADABANDERAAYB.glb');
-   const { scene: cafe } = useGLTF('/models/EXPLANADACAFETERIAYE.glb')
-    const { scene: explanada } = useGLTF('/models/EXPLANADACDI.glb');
+   const { scene: bandera } = useGLTF('./models/EXPLANADABANDERAAYB.glb');
+   const { scene: cafe } = useGLTF('./models/EXPLANADACAFETERIAYE.glb')
+    const { scene: explanada } = useGLTF('./models/EXPLANADACDI.glb');
 
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
