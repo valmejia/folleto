@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/ya-tuza-vez/static/css/main.c53d583e.css",
-    "main.js": "/ya-tuza-vez/static/js/main.374e54c5.js",
-    "index.html": "/ya-tuza-vez/index.html",
-    "main.c53d583e.css.map": "/ya-tuza-vez/static/css/main.c53d583e.css.map",
-    "main.374e54c5.js.map": "/ya-tuza-vez/static/js/main.374e54c5.js.map"
+    "main.css": "/folleto/static/css/main.c53d583e.css",
+    "main.js": "/folleto/static/js/main.8bf9c7c8.js",
+    "index.html": "/folleto/index.html",
+    "main.c53d583e.css.map": "/folleto/static/css/main.c53d583e.css.map",
+    "main.8bf9c7c8.js.map": "/folleto/static/js/main.8bf9c7c8.js.map"
   },
   "entrypoints": [
     "static/css/main.c53d583e.css",
-    "static/js/main.374e54c5.js"
+    "static/js/main.8bf9c7c8.js"
   ]
 }
