@@ -1019,7 +1019,9 @@ function HomeWithModel() {
     // Combinar todas las selecciones para mostrar íconos
     const allSelectedBuildings = [...clickedBuildings, ...highlightedBuildings];
 
-   // const { scene } = useGLTF('/models/EXPLANADA.glb');
+   const { scene: bandera } = useGLTF('/models/EXPLANADABANDERAAYB.glb');
+   const { scene: cafe } = useGLTF('/models/EXPLANADACAFETERIAYE.glb')
+    const { scene: explanada } = useGLTF('/models/EXPLANADACDI.glb');
 
     return (
         <div style={{ width: "100%", height: "100vh", position: "relative" }}>
@@ -1193,14 +1195,27 @@ function HomeWithModel() {
                     <meshStandardMaterial color="#87E753" />
                 </mesh>
 
-                {/* Piso con manejo de clicks
                 <primitive
-                    object={scene}
+                    object={bandera}
                     position={[0, 0, 500]}
                     scale={[2, 2, 2]}
                     onClick={handleBackgroundClick}
                 />
-                */}
+
+                <primitive
+                    object={cafe}
+                    position={[0, 0, 500]}
+                    scale={[2, 2, 2]}
+                    onClick={handleBackgroundClick}
+                />
+
+                <primitive
+                    object={explanada}
+                    position={[0, 0, 500]}
+                    scale={[2, 2, 2]}
+                    onClick={handleBackgroundClick}
+                />
+
 
                 {/* Edificios con soporte para selección múltiple */}
                 {edificios.map((edificio) => (
