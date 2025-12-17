@@ -1,6 +1,6 @@
 {
   "name": "folleto-client",
-  "homepage": "https://valmejia.github.io/folleto",
+  "homepage": "https://valmejia.github.io/ya-tuza-vez",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -23,7 +23,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && echo '/* /index.html 200' | cat >build/_redirects",
+    "build": "react-scripts build && echo /* /index.html 200 > build/_redirects",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
